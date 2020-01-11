@@ -95,8 +95,14 @@ Artifact:
     <scope>compile</scope>
 </dependency>
 ```
-Repo:  
-pending...
+Repo (for snapshots):  
+```xml
+<repository>
+    <id>sonatype</id>
+    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+</repository>
+```
+Releases get deployed to maven central.
 
 ## Licence
 MIT
