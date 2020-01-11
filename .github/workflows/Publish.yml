@@ -14,6 +14,13 @@ jobs:
         with:
           java-version: 11
 
+      - name: Moving build to artifacts directory
+        run: |
+          echo "Import the GPG key"
+          echo  ${{ secrets.GITHUB_GPG_KEY }} | base64 -d > private.key
+          gpg --import ./private.key
+          rm ./private.key
+
       - name: Release
         uses: qcastel/github-actions-maven-release@master
         with:
@@ -27,3 +34,5 @@ jobs:
           git-release-bot-email: "release-bot@minidigger.me"
 
           access-token: ${{ secrets.GITHUB_ACCESS_TOKEN }}
+
+          maven-args: ${{ join('-Dgpg.passphrase=', secrets.MVN_REPO_PRIVATE_REPO_PASSWORD) }}
