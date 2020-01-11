@@ -46,6 +46,8 @@
                 <version>3.0.0-M1</version>
                 <configuration>
                     <releaseProfiles>deploy</releaseProfiles>
+                    <!-- paper doesnt do releases -->
+                    <allowTimestampedSnapshots>true</allowTimestampedSnapshots>
                 </configuration>
             </plugin>
         </plugins>
