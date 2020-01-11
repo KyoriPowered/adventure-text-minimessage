@@ -13,16 +13,17 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
+
       - name: Release
-          uses: qcastel/github-actions-maven-release@master
-          with:
-            release-branch-name: "master"
+        uses: qcastel/github-actions-maven-release@master
+        with:
+          release-branch-name: "master"
 
-            maven-repo-server-id: ${{ secrets.MVN_REPO_PRIVATE_REPO_ID }}
-            maven-repo-server-username: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
-            maven-repo-server-password: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
+          maven-repo-server-id: ${{ secrets.MVN_REPO_PRIVATE_REPO_ID }}
+          maven-repo-server-username: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
+          maven-repo-server-password: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
 
-            git-release-bot-name: "release-bot"
-            git-release-bot-email: "release-bot@minidigger.me"
+          git-release-bot-name: "release-bot"
+          git-release-bot-email: "release-bot@minidigger.me"
 
-            access-token: ${{ secrets.GITHUB_ACCESS_TOKEN }}
+          access-token: ${{ secrets.GITHUB_ACCESS_TOKEN }}
