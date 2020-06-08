@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 import static me.minidigger.minimessage.text.Constants.BOLD;
 import static me.minidigger.minimessage.text.Constants.CLICK;
 import static me.minidigger.minimessage.text.Constants.CLOSE_TAG;
+import static me.minidigger.minimessage.text.Constants.COLOR;
 import static me.minidigger.minimessage.text.Constants.HOVER;
 import static me.minidigger.minimessage.text.Constants.INSERTION;
 import static me.minidigger.minimessage.text.Constants.ITALIC;
@@ -182,12 +183,12 @@ public final class MiniMessageSerializer {
 
     @Nonnull
     private static String startColor(@Nonnull TextColor color) {
-        return startTag(TextColor.NAMES.name(color));
+        return startTag(COLOR + SEPARATOR + TextColor.NAMES.name(color));
     }
 
     @Nonnull
     private static String endColor(@Nonnull TextColor color) {
-        return endTag(TextColor.NAMES.name(color));
+        return endTag(COLOR + SEPARATOR + TextColor.NAMES.name(color));
     }
 
     @Nonnull

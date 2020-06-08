@@ -19,7 +19,7 @@ public class MiniMessageSerializerTest {
 
     @Test
     public void testColor() {
-        String expected = "<red>This is a test";
+        String expected = "<color:red>This is a test";
 
         Builder builder = TextComponent.builder().content("This is a test").color(TextColor.RED);
 
@@ -28,7 +28,7 @@ public class MiniMessageSerializerTest {
 
     @Test
     public void testColorClosing() {
-        String expected = "<red>This is a </red>test";
+        String expected = "<color:red>This is a </color:red>test";
 
         Builder builder = TextComponent.builder()
                 .content("This is a ").color(TextColor.RED)
@@ -39,7 +39,7 @@ public class MiniMessageSerializerTest {
 
     @Test
     public void testNestedColor() {
-        String expected = "<red>This is a <blue>blue <red>test";
+        String expected = "<color:red>This is a <color:blue>blue <color:red>test";
 
         Builder builder = TextComponent.builder()
                 .content("This is a ").color(TextColor.RED)
@@ -75,7 +75,7 @@ public class MiniMessageSerializerTest {
 
     @Test
     public void testHoverWithNested() {
-        String expected = "<hover:show_text:\"<red>---<blue><bold>-\">Some hover</hover> that ends here";
+        String expected = "<hover:show_text:\"<color:red>---<color:blue><bold>-\">Some hover</hover> that ends here";
 
         Builder builder = TextComponent.builder()
                 .content("Some hover").hoverEvent(HoverEvent.showText(TextComponent.builder()
@@ -100,7 +100,7 @@ public class MiniMessageSerializerTest {
 
     @Test
     public void testContinuedClick() {
-        String expected = "<click:run_command:\"test\">Some click<red> that doesn't end here";
+        String expected = "<click:run_command:\"test\">Some click<color:red> that doesn't end here";
 
         Builder builder = TextComponent.builder()
                 .content("Some click").clickEvent(ClickEvent.runCommand("test"))
@@ -112,7 +112,7 @@ public class MiniMessageSerializerTest {
 
     @Test
     public void testContinuedClick2() {
-        String expected = "<click:run_command:\"test\">Some click<red> that doesn't end here";
+        String expected = "<click:run_command:\"test\">Some click<color:red> that doesn't end here";
 
         Builder builder = TextComponent.builder()
                 .content("Some click").clickEvent(ClickEvent.runCommand("test"))
@@ -135,7 +135,7 @@ public class MiniMessageSerializerTest {
 
     @Test
     public void testKeyBindWithColor() {
-        String expected = "Press <red><key:key.jump> to jump!";
+        String expected = "Press <color:red><key:key.jump> to jump!";
 
         Builder builder = TextComponent.builder()
                 .content("Press ")
