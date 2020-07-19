@@ -36,7 +36,7 @@ public class Gradient implements Fancy {
   private int colorIndex = 0;
 
   private float factorStep = 0;
-  private TextColor[] colors;
+  private final TextColor[] colors;
   private float phase;
   private boolean negativePhase = false;
 
@@ -47,19 +47,17 @@ public class Gradient implements Fancy {
   public Gradient(float phase, TextColor... colors) {
     this.colors = colors;
     this.phase = phase;
+    if (phase < 0) {
+      this.negativePhase = true;
+      Collections.reverse(Arrays.asList(this.colors));
+      this.phase = 1 + phase;
+    }
   }
 
   @Override
   public void init(int size) {
     final int sectorLength = size / (this.colors.length - 1);
     this.factorStep = 1.0f / (sectorLength + this.index - 1);
-    if (this.phase < 0) {
-      this.negativePhase = true;
-      final List<TextColor> l = Arrays.asList(this.colors);
-      Collections.reverse(l);
-      this.colors = l.toArray(new TextColor[0]);
-      this.phase = 1 + this.phase;
-    }
     this.phase = this.phase * (sectorLength - 1);
     this.index = 0;
   }
