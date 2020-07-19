@@ -473,14 +473,14 @@ import static net.kyori.adventure.text.minimessage.Tokens.FONT;
       final String[] split = token.split(":");
       if (split.length >= 3) {
         TextColor[] colors = new TextColor[split.length - 1];
-        int phase = 0;
+        float phase = 0;
         for (int i = 1; i < split.length; i++) {
           final TextColor color = parseColor(split[i]);
           if (color == null) {
             // might be the phase
             if (i == split.length - 1) {
               try {
-                phase = Integer.parseInt(split[i]);
+                phase = Float.parseFloat(split[i]);
                 // we created one entry to much, lets get rid of it
                 colors = Arrays.copyOfRange(colors, 0, colors.length - 1);
               } catch (NumberFormatException ex) {
