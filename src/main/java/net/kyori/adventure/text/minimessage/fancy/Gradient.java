@@ -28,7 +28,6 @@ import net.kyori.adventure.text.format.TextColor;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 public class Gradient implements Fancy {
 
@@ -57,8 +56,8 @@ public class Gradient implements Fancy {
   @Override
   public void init(int size) {
     final int sectorLength = size / (this.colors.length - 1);
-    this.factorStep = 1.0f / (sectorLength + this.index - 1);
-    this.phase = this.phase * (sectorLength - 1);
+    this.factorStep = 1.0f / (sectorLength + this.index);
+    this.phase = this.phase * (sectorLength);
     this.index = 0;
   }
 
