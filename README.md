@@ -10,6 +10,10 @@ Simple library that implements an easy to use textual format on top of component
 
 * Maven
 ```xml
+<repository>
+  <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+</repository>
+
 <dependency>
   <groupId>net.kyori</groupId>
   <artifactId>adventure-text-minimessage</artifactId>
@@ -19,7 +23,9 @@ Simple library that implements an easy to use textual format on top of component
 * Gradle
 ```gradle
 repositories {
-  mavenCentral()
+  maven {
+    url = 'https://oss.sonatype.org/content/repositories/snapshots'
+  }
 }
 
 dependencies {
