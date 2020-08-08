@@ -23,7 +23,7 @@ repositories {
 }
 
 dependencies {
-  compile 'net.kyori:adventure-text-minimessage:3.0.0-SNAPSHOT'
+  implementation 'net.kyori:adventure-text-minimessage:3.0.0-SNAPSHOT'
 }
 ```
 
