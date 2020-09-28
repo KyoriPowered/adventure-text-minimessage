@@ -484,10 +484,13 @@ import static net.kyori.adventure.text.minimessage.Tokens.FONT;
                 // we created one entry to much, lets get rid of it
                 colors = Arrays.copyOfRange(colors, 0, colors.length - 1);
               } catch (NumberFormatException ex) {
-                throw new ParseException("Can't parse gradient phase (not a color nor a phase " + i + ") " + token);
+                throw new ParseException(String.format("Can't parse gradient phase ('%s' is not a color nor a phase) <%s>", split[i], token));
+              }
+              if (phase < -1f || phase > 1f) {
+                throw new ParseException(String.format("Gradient phase is out of range (%s). Must be in the range [-1.0f, 1.0f] (inclusive).", phase));
               }
             } else {
-              throw new ParseException("Can't parse gradient phase (not a color " + i + ") " + token);
+              throw new ParseException(String.format("Can't parse gradient phase ('%s' is not a color) <%s>", split[i], token));
             }
           } else {
             colors[i - 1] = color;
