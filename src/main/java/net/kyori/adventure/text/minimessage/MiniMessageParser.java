@@ -78,8 +78,10 @@ import static net.kyori.adventure.text.minimessage.Tokens.FONT;
   private static final String TOKEN = "token";
   private static final String INNER = "inner";
   private static final String END = "end";
-  // https://regex101.com/r/8VZ7uA/10
-  private static final Pattern pattern = Pattern.compile("((?<start><)(?<token>[^<>]+(:(?<inner>['\"]?([^'\"](\\\\['\"])?)+['\"]?))*)(?<end>>))+?");
+  // https://regex101.com/r/AFkDgl/2
+  private static final Pattern pattern = Pattern.compile("((\\\\?)(?<start><)(?<token>[^<>]+(:(?<inner>['\"]?([^'\"](\\\\['\"])?)+['\"]?))*)\\2(?<end>>))+?");
+  // https://regex101.com/r/3qyMdD/2 - update with the above, as it's just a group-reduced version
+  private static final Pattern escapePattern = Pattern.compile("\\\\(<[^<>]+(:['\"]?([^'\"](\\\\['\"])?)+['\"]?)*)\\\\>");
 
   private static final Pattern dumSplitPattern = Pattern.compile("['\"]:['\"]");
 
@@ -88,6 +90,9 @@ import static net.kyori.adventure.text.minimessage.Tokens.FONT;
     final Matcher matcher = pattern.matcher(richMessage);
     int lastEnd = 0;
     while (matcher.find()) {
+      if (matcher.group(2).equals("\\")) { // Already escaped, avoid trying to double escape
+        continue;
+      }
       int startIndex = matcher.start();
       int endIndex = matcher.end();
 
@@ -121,6 +126,9 @@ import static net.kyori.adventure.text.minimessage.Tokens.FONT;
     final Matcher matcher = pattern.matcher(richMessage);
     int lastEnd = 0;
     while (matcher.find()) {
+      if (matcher.group(2).equals("\\")) { // Don't strip escaped tokens!
+        continue;
+      }
       final int startIndex = matcher.start();
       final int endIndex = matcher.end();
 
@@ -211,6 +219,9 @@ import static net.kyori.adventure.text.minimessage.Tokens.FONT;
     final Matcher matcher = pattern.matcher(richMessage);
     int lastEnd = 0;
     while (matcher.find()) {
+      if (matcher.group(2).equals("\\")) { // Don't try reading escaped
+        continue;
+      }
       Component current = null;
       int startIndex = matcher.start();
       int endIndex = matcher.end();
@@ -224,7 +235,7 @@ import static net.kyori.adventure.text.minimessage.Tokens.FONT;
       // handle message
       if (msg != null && msg.length() != 0) {
         // append message
-        current = Component.text(msg);
+        current = Component.text(cleanEscape(msg));
         current = applyFormatting(clickEvents, hoverEvents, colors, insertions, decorations, current, parent, fancy, fonts);
 
       }
@@ -367,7 +378,7 @@ import static net.kyori.adventure.text.minimessage.Tokens.FONT;
     if (richMessage.length() > lastEnd) {
       final String msg = richMessage.substring(lastEnd);
       // append message
-      Component current = Component.text(msg);
+      Component current = Component.text(cleanEscape(msg));
 
       // set everything that is not closed yet
       current = applyFormatting(clickEvents, hoverEvents, colors, insertions, decorations, current, parent, fancy, fonts);
@@ -591,5 +602,9 @@ import static net.kyori.adventure.text.minimessage.Tokens.FONT;
 
   private static String cleanInner(final String inner) {
     return inner.substring(1).substring(0, inner.length() - 2); // cut off first and last "/'
+  }
+
+  private static String cleanEscape(final @NonNull String input) {
+    return escapePattern.matcher(input).replaceAll("$1>");
   }
 }
