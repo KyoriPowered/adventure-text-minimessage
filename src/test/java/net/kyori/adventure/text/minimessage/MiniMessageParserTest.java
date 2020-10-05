@@ -24,6 +24,7 @@
 package net.kyori.adventure.text.minimessage;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -116,6 +117,23 @@ public class MiniMessageParserTest {
     assertEquals(expected, MiniMessageParser.escapeTokens(input));
   }
 
+  @Test
+  public void testUnescape() {
+    final String input ="<yellow>TEST\\<green\\> nested\\</green\\>Test";
+    final String expected = "TEST<green> nested</green>Test";
+    TextComponent comp = (TextComponent) MiniMessageParser.parseFormat(input);
+
+    assertEquals(expected, comp.content());
+  }
+
+  @Test
+  public void testNoUnescape() {
+    final String input ="<yellow>TEST\\<green\\>\\> \\< nested\\</green\\>Test";
+    final String expected = "TEST<green>\\> \\< nested</green>Test";
+    TextComponent comp = (TextComponent) MiniMessageParser.parseFormat(input);
+
+    assertEquals(expected, comp.content());
+  }
 
   @Test
   public void checkPlaceholder() {
