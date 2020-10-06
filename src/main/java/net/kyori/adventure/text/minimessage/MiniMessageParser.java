@@ -23,6 +23,8 @@
  */
 package net.kyori.adventure.text.minimessage;
 
+import java.util.PrimitiveIterator;
+import java.util.stream.IntStream;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.KeybindComponent;
@@ -433,13 +435,16 @@ import static net.kyori.adventure.text.minimessage.Tokens.FONT;
       final Fancy nextFancy = fancy.entrySet().iterator().next().getValue();
       nextFancy.init(bigComponent.content().length());
       // split into multiple components
-      for (int i = 0; i < bigComponent.content().length(); i++) {
-        smallComponent = Component.text(bigComponent.content().charAt(i));
+      int charSize;
+      final char[] holder = new char[2];
+      for (PrimitiveIterator.OfInt it = bigComponent.content().codePoints().iterator(); it.hasNext();) {
+        charSize = Character.toChars(it.nextInt(), holder, 0);
+        smallComponent = Component.text(new String(holder, 0, charSize));
         // apply formatting
         smallComponent = applyFormatting(clickEvents, hoverEvents, colors, insertions, decorations, smallComponent, parent, Collections.emptyMap(), fonts);
         smallComponent = nextFancy.apply(smallComponent);
         // append
-        if (i != bigComponent.content().length() - 1)  {
+        if (it.hasNext())  {
           parent.append(smallComponent);
         }
       }
