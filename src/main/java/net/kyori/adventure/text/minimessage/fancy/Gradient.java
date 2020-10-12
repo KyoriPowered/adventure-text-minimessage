@@ -26,6 +26,9 @@ package net.kyori.adventure.text.minimessage.fancy;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 
+import java.util.Arrays;
+import java.util.Collections;
+
 public class Gradient implements Fancy {
 
   private int index = 0;
@@ -33,21 +36,28 @@ public class Gradient implements Fancy {
 
   private float factorStep = 0;
   private final TextColor[] colors;
-  private final int phase;
+  private float phase;
+  private boolean negativePhase = false;
 
   public Gradient() {
     this(0, TextColor.fromHexString("#ffffff"), TextColor.fromHexString("#000000"));
   }
 
-  public Gradient(int phase, TextColor... colors) {
+  public Gradient(float phase, TextColor... colors) {
     this.colors = colors;
     this.phase = phase;
+    if (phase < 0) {
+      this.negativePhase = true;
+      Collections.reverse(Arrays.asList(this.colors));
+      this.phase = 1 + phase;
+    }
   }
 
   @Override
   public void init(int size) {
-    size = size / (colors.length - 1);
-    this.factorStep = (float) (1. / (size + this.index - 1));
+    final int sectorLength = size / (this.colors.length - 1);
+    this.factorStep = 1.0f / (sectorLength + this.index);
+    this.phase = this.phase * (sectorLength);
     this.index = 0;
   }
 
@@ -58,7 +68,7 @@ public class Gradient implements Fancy {
 
   private TextColor getColor() {
     // color switch needed?
-    if (factorStep * index > 1.1) {
+    if (factorStep * index > 1) {
       colorIndex++;
       index = 0;
     }
@@ -68,8 +78,12 @@ public class Gradient implements Fancy {
     if (factor > 1) {
       factor = 1 - (factor - 1);
     }
-
-    return interpolate(colors[colorIndex], colors[colorIndex + 1], factor);
+    if (negativePhase && colors.length % 2 != 0) {
+      // flip the gradient segment for to allow for looping phase -1 through 1
+      return interpolate(colors[colorIndex + 1], colors[colorIndex], factor);
+    } else {
+      return interpolate(colors[colorIndex], colors[colorIndex + 1], factor);
+    }
   }
 
   private TextColor interpolate(TextColor color1, TextColor color2, float factor) {
