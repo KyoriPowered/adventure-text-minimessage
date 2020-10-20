@@ -557,7 +557,11 @@ import static net.kyori.adventure.text.minimessage.Tokens.FONT;
     }
     final ClickEvent.Action action = ClickEvent.Action.NAMES.value(args[1].toLowerCase(Locale.ROOT));
     if (action == null) throw new ParseException("Can't parse click action (invalid action) " + token);
-    return ClickEvent.clickEvent(action, token.replace(CLICK + SEPARATOR + args[1] + SEPARATOR, ""));
+    String value = token.replace(CLICK + SEPARATOR + args[1] + SEPARATOR, "");
+    if ((value.startsWith("'") && value.endsWith("'")) || (value.startsWith("\"") && value.endsWith("\""))) {
+      value = value.substring(1, value.length() - 1);
+    }
+    return ClickEvent.clickEvent(action, value);
   }
 
 

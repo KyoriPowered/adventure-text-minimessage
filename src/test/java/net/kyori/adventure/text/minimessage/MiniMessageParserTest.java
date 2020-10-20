@@ -326,6 +326,19 @@ public class MiniMessageParserTest {
   }
 
   @Test
+  public void testGH5Quoted() {
+    final String input = "<dark_gray>»<gray> To download it from the internet, <click:open_url:\"https://www.google.com\"><hover:show_text:\"<green>/!\\ install it from Options/ResourcePacks in your game\"><green><bold>CLICK HERE</bold></hover></click>";
+    final String expected = "{\"text\":\"\",\"extra\":[{\"text\":\"»\",\"color\":\"dark_gray\"},{\"text\":\" To download it from the internet, \",\"color\":\"gray\"},{\"text\":\"CLICK HERE\",\"color\":\"green\",\"bold\":true,\"clickEvent\":{\"action\":\"open_url\",\"value\":\"https://www.google.com\"},\"hoverEvent\":{\"action\":\"show_text\",\"contents\":{\"text\":\"/!\\\\ install it from Options/ResourcePacks in your game\",\"color\":\"green\"}}}]}";
+
+    // should work
+    final Component comp1 = MiniMessageParser.parseFormat(input);
+    test(comp1, expected);
+
+    // shouldnt throw an error
+    MiniMessageParser.parseFormat(input, "url", "https://www.google.com");
+  }
+
+  @Test
   @Disabled("Need to implement inner with ' or \"")  // TODO
   public void testGH5Modified() {
     final String input = "<dark_gray>»<gray> To download it from the internet, <click:open_url:<pack_url>><hover:show_text:\"<green>/!\\ install it from 'Options/ResourcePacks' in your game\"><green><bold>CLICK HERE</bold></hover></click>";
