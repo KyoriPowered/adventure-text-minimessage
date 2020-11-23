@@ -56,6 +56,34 @@ import java.util.Map;
   }
 
   @Override
+  public @NonNull Component parse(@NonNull String input, @NonNull Object... placeholders) {
+    if (placeholders.length % 2 != 0) {
+      throw new IllegalArgumentException("Each placeholder must have a key and value");
+    }
+
+    Template[] templates = new Template[placeholders.length / 2];
+    for (int i = 0; i < placeholders.length; i += 2) {
+      if (!(placeholders[i] instanceof String)) {
+        throw new IllegalArgumentException("Argument " + i + " in placeholders must be String: is key");
+      }
+      String key = (String) placeholders[i];
+
+      Object rawValue = placeholders[i + 1];
+      Component value;
+      if (rawValue instanceof String) {
+        value = Component.text((String) rawValue);
+      } else if (rawValue instanceof Component) {
+        value = (Component) rawValue;
+      } else {
+        throw new IllegalArgumentException("Argument " + (i + 1) + " in placeholders must be Component or String: is value");
+      }
+      templates[i / 2] = Template.of(key, value);
+    }
+
+    return parse(input, templates);
+  }
+
+  @Override
   public @NonNull Component parse(@NonNull String input, @NonNull String... placeholders) {
     if (markdown) {
       input = MiniMarkdownParser.parse(input);
