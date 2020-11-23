@@ -25,6 +25,7 @@ package net.kyori.adventure.text.minimessage;
 
 import net.kyori.adventure.text.Component;
 
+import net.kyori.adventure.text.ComponentLike;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.List;
