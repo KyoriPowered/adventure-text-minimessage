@@ -72,8 +72,8 @@ import java.util.Map;
       Component value;
       if (rawValue instanceof String) {
         value = Component.text((String) rawValue);
-      } else if (rawValue instanceof Component) {
-        value = (Component) rawValue;
+      } else if (rawValue instanceof ComponentLike) {
+        value = ((ComponentLike) rawValue).asComponent();
       } else {
         throw new IllegalArgumentException("Argument " + (i + 1) + " in placeholders must be Component or String: is value");
       }
