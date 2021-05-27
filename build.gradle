@@ -10,7 +10,7 @@ plugins {
   id "net.kyori.indra.license-header" version "$indraVersion"
   id "net.kyori.indra.checkstyle" version "$indraVersion"
   id "org.xbib.gradle.plugin.jflex" version "1.5.0"
-  id "me.champeau.jmh" version "0.6.4"
+  id "me.champeau.jmh" version "0.6.5"
 }
 
 // Adventure version
