@@ -1,7 +1,7 @@
 /*
  * This file is part of adventure-text-minimessage, licensed under the MIT License.
  *
- * Copyright (c) 2018-2020 KyoriPowered
+ * Copyright (c) 2018-2021 KyoriPowered
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,15 @@
  */
 package net.kyori.adventure.text.minimessage.markdown;
 
-import net.kyori.adventure.text.minimessage.Tokens;
-import net.kyori.examination.Examinable;
-import net.kyori.examination.ExaminableProperty;
-import net.kyori.examination.string.StringExaminer;
-
-import org.checkerframework.checker.nullness.qual.NonNull;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
+import net.kyori.adventure.text.minimessage.Tokens;
+import net.kyori.examination.Examinable;
+import net.kyori.examination.ExaminableProperty;
+import net.kyori.examination.string.StringExaminer;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Internal class for markdown handling.
@@ -53,7 +51,7 @@ public final class MiniMarkdownParser {
    * @return the stripped input
    * @since 4.1.0
    */
-  public static @NonNull String stripMarkdown(final @NonNull String input, final @NonNull MarkdownFlavor markdownFlavor) {
+  public static @NotNull String stripMarkdown(final @NotNull String input, final @NotNull MarkdownFlavor markdownFlavor) {
     return handle(input, true, markdownFlavor);
   }
 
@@ -65,11 +63,11 @@ public final class MiniMarkdownParser {
    * @return a modified string
    * @since 4.1.0
    */
-  public static @NonNull String parse(final @NonNull String input, final @NonNull MarkdownFlavor markdownFlavor) {
+  public static @NotNull String parse(final @NotNull String input, final @NotNull MarkdownFlavor markdownFlavor) {
     return handle(input, false, markdownFlavor);
   }
 
-  private static @NonNull String handle(final @NonNull String input, final boolean strip, final @NonNull MarkdownFlavor markdownFlavor) {
+  private static @NotNull String handle(final @NotNull String input, final boolean strip, final @NotNull MarkdownFlavor markdownFlavor) {
     final StringBuilder sb = new StringBuilder();
 
     int bold = -1;
@@ -85,14 +83,14 @@ public final class MiniMarkdownParser {
 
     final List<Insert> inserts = new ArrayList<>();
     int skip = 0;
-    for(int i = 0; i + skip < input.length(); i++) {
+    for (int i = 0; i + skip < input.length(); i++) {
       final int currIndex = i + skip;
       final char c = input.charAt(currIndex);
       final char n = next(currIndex, input);
 
       boolean shouldSkip = false;
-      if(markdownFlavor.isBold(c, n)) {
-        if(bold == -1) {
+      if (markdownFlavor.isBold(c, n)) {
+        if (bold == -1) {
           bold = sb.length();
           boldSkip = new Insert(sb.length(), c + "");
         } else {
@@ -102,8 +100,8 @@ public final class MiniMarkdownParser {
         }
         skip += c == n ? 1 : 0;
         shouldSkip = true;
-      } else if(markdownFlavor.isItalic(c, n)) {
-        if(italic == -1) {
+      } else if (markdownFlavor.isItalic(c, n)) {
+        if (italic == -1) {
           italic = sb.length();
           italicSkip = new Insert(sb.length(), c + "");
         } else {
@@ -113,8 +111,8 @@ public final class MiniMarkdownParser {
         }
         skip += c == n ? 1 : 0;
         shouldSkip = true;
-      } else if(markdownFlavor.isUnderline(c, n)) {
-        if(underline == -1) {
+      } else if (markdownFlavor.isUnderline(c, n)) {
+        if (underline == -1) {
           underline = sb.length();
           underlineSkip = new Insert(sb.length(), c + "");
         } else {
@@ -124,8 +122,8 @@ public final class MiniMarkdownParser {
         }
         skip += c == n ? 1 : 0;
         shouldSkip = true;
-      } else if(markdownFlavor.isStrikeThrough(c, n)) {
-        if(strikeThrough == -1) {
+      } else if (markdownFlavor.isStrikeThrough(c, n)) {
+        if (strikeThrough == -1) {
           strikeThrough = sb.length();
           strikeThroughSkip = new Insert(sb.length(), c + "");
         } else {
@@ -135,8 +133,8 @@ public final class MiniMarkdownParser {
         }
         skip += c == n ? 1 : 0;
         shouldSkip = true;
-      } else if(markdownFlavor.isObfuscate(c, n)) {
-        if(obfuscate == -1) {
+      } else if (markdownFlavor.isObfuscate(c, n)) {
+        if (obfuscate == -1) {
           obfuscate = sb.length();
           obfuscateSkip = new Insert(sb.length(), c + "");
         } else {
@@ -148,42 +146,42 @@ public final class MiniMarkdownParser {
         shouldSkip = true;
       }
 
-      if(!shouldSkip) {
+      if (!shouldSkip) {
         sb.append(c);
       }
     }
 
-    if(strip) {
+    if (strip) {
       inserts.clear();
     } else {
       inserts.sort(Comparator.comparing(Insert::pos).thenComparing(Insert::value).reversed());
     }
 
-    if(underline != -1) {
+    if (underline != -1) {
       inserts.add(underlineSkip);
     }
-    if(bold != -1) {
+    if (bold != -1) {
       inserts.add(boldSkip);
     }
-    if(italic != -1) {
+    if (italic != -1) {
       inserts.add(italicSkip);
     }
-    if(strikeThrough != -1) {
+    if (strikeThrough != -1) {
       inserts.add(strikeThroughSkip);
     }
-    if(obfuscate != -1) {
+    if (obfuscate != -1) {
       inserts.add(obfuscateSkip);
     }
 
-    for(final Insert el : inserts) {
+    for (final Insert el : inserts) {
       sb.insert(el.pos(), el.value());
     }
 
     return sb.toString();
   }
 
-  private static char next(final int index, final @NonNull String input) {
-    if(index < input.length() - 1) {
+  private static char next(final int index, final @NotNull String input) {
+    if (index < input.length() - 1) {
       return input.charAt(index + 1);
     } else {
       return ' ';
@@ -194,7 +192,7 @@ public final class MiniMarkdownParser {
     private final int pos;
     private final String value;
 
-    Insert(final int pos, final @NonNull String value) {
+    Insert(final int pos, final @NotNull String value) {
       this.pos = pos;
       this.value = value;
     }
@@ -203,12 +201,12 @@ public final class MiniMarkdownParser {
       return this.pos;
     }
 
-    private @NonNull String value() {
+    private @NotNull String value() {
       return this.value;
     }
 
     @Override
-    public @NonNull Stream<? extends ExaminableProperty> examinableProperties() {
+    public @NotNull Stream<? extends ExaminableProperty> examinableProperties() {
       return Stream.of(
         ExaminableProperty.of("pos", this.pos),
         ExaminableProperty.of("value", this.value)

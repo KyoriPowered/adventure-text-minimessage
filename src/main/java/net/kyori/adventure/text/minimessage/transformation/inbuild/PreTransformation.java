@@ -1,7 +1,7 @@
 /*
  * This file is part of adventure-text-minimessage, licensed under the MIT License.
  *
- * Copyright (c) 2018-2020 KyoriPowered
+ * Copyright (c) 2018-2021 KyoriPowered
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,21 @@
  */
 package net.kyori.adventure.text.minimessage.transformation.inbuild;
 
+import java.util.stream.Stream;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.minimessage.Tokens;
 import net.kyori.adventure.text.minimessage.transformation.Transformation;
 import net.kyori.adventure.text.minimessage.transformation.TransformationParser;
 import net.kyori.examination.ExaminableProperty;
-
-import org.checkerframework.checker.nullness.qual.NonNull;
-
-import java.util.stream.Stream;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * A transformation that returns its contents, not handling any extra parameters.
  *
+ * @deprecated no longer in use as of 4.2.0, does nothing, handled by parser now
  * @since 4.1.0
  */
+@Deprecated
 public final class PreTransformation extends Transformation {
   private static final PreTransformation INSTANCE = new PreTransformation();
 
@@ -57,8 +56,8 @@ public final class PreTransformation extends Transformation {
   }
 
   @Override
-  public Component apply(final Component component, final TextComponent.Builder parent) {
-    return component;
+  public Component apply() {
+    return Component.empty();
   }
 
   @Override
@@ -72,7 +71,7 @@ public final class PreTransformation extends Transformation {
   }
 
   @Override
-  public @NonNull Stream<? extends ExaminableProperty> examinableProperties() {
+  public @NotNull Stream<? extends ExaminableProperty> examinableProperties() {
     return Stream.empty();
   }
 

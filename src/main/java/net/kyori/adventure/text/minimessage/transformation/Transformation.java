@@ -1,7 +1,7 @@
 /*
  * This file is part of adventure-text-minimessage, licensed under the MIT License.
  *
- * Copyright (c) 2018-2020 KyoriPowered
+ * Copyright (c) 2018-2021 KyoriPowered
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,10 +25,10 @@ package net.kyori.adventure.text.minimessage.transformation;
 
 import java.util.List;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.minimessage.Context;
 import net.kyori.adventure.text.minimessage.parser.Token;
+import net.kyori.adventure.text.minimessage.parser.node.TagPart;
 import net.kyori.examination.Examinable;
 import net.kyori.examination.string.StringExaminer;
 
@@ -42,6 +42,7 @@ import net.kyori.examination.string.StringExaminer;
  */
 public abstract class Transformation implements Examinable {
   private String name;
+  private List<TagPart> args;
   protected Context context;
 
   protected Transformation() {
@@ -54,8 +55,9 @@ public abstract class Transformation implements Examinable {
    * @param args tokens within the tags, used to define arguments. Each
    * @since 4.1.0
    */
-  public void load(final String name, final List<Token> args) {
+  public void load(final String name, final List<TagPart> args) {
     this.name = name;
+    this.args = args;
   }
 
   /**
@@ -69,24 +71,32 @@ public abstract class Transformation implements Examinable {
   }
 
   /**
+   * The arguments making up this instance.
+   *
+   * @return the args
+   * @since 4.2.0
+   */
+  public final List<TagPart> args() {
+    return this.args;
+  }
+
+  /**
+   * Returns the tokens which make up the arguments as an array.
+   *
+   * @return the arg tokens
+   * @since 4.2.0
+   */
+  public final Token[] argTokenArray() {
+    return this.args.stream().map(TagPart::token).toArray(Token[]::new);
+  }
+
+  /**
    * Return a transformed {@code component} based on the applied parameters.
    *
-   * @param component component to transform
-   * @param parent the holder being used to configure this component
    * @return the transformed component
    * @since 4.1.0
    */
-  public abstract Component apply(final Component component, final TextComponent.Builder parent);
-
-  /**
-   * Checks if this transformation is allowed to be interpreted inside a pre tag.
-   *
-   * @return if this transformation is allowed to be interpreted inside a pre tag
-   * @since 4.1.0
-   */
-  public boolean allowedInPre() {
-    return false;
-  }
+  public abstract Component apply();
 
   void context(final Context context) {
     this.context = context;
@@ -106,13 +116,13 @@ public abstract class Transformation implements Examinable {
   protected Component merge(final Component target, final Component template) {
     Component result = target.style(target.style().merge(template.style(), Style.Merge.Strategy.IF_ABSENT_ON_TARGET, Style.Merge.all()));
 
-    if(template.hoverEvent() != null) {
+    if (template.hoverEvent() != null) {
       result = result.hoverEvent(template.hoverEvent());
     }
-    if(template.clickEvent() != null) {
+    if (template.clickEvent() != null) {
       result = result.clickEvent(template.clickEvent());
     }
-    if(template.insertion() != null) {
+    if (template.insertion() != null) {
       result = result.insertion(template.insertion());
     }
 

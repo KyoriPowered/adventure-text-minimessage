@@ -1,7 +1,7 @@
 /*
  * This file is part of adventure-text-minimessage, licensed under the MIT License.
  *
- * Copyright (c) 2018-2020 KyoriPowered
+ * Copyright (c) 2018-2021 KyoriPowered
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.text.minimessage.transformation;
 
+import java.util.function.Predicate;
 import net.kyori.adventure.text.minimessage.transformation.inbuild.ClickTransformation;
 import net.kyori.adventure.text.minimessage.transformation.inbuild.ColorTransformation;
 import net.kyori.adventure.text.minimessage.transformation.inbuild.DecorationTransformation;
@@ -35,8 +36,6 @@ import net.kyori.adventure.text.minimessage.transformation.inbuild.PreTransforma
 import net.kyori.adventure.text.minimessage.transformation.inbuild.RainbowTransformation;
 import net.kyori.adventure.text.minimessage.transformation.inbuild.ResetTransformation;
 import net.kyori.adventure.text.minimessage.transformation.inbuild.TranslatableTransformation;
-
-import java.util.function.Predicate;
 
 /**
  * Available types of transformation.
@@ -55,7 +54,19 @@ public final class TransformationType<T extends Transformation> {
   public static final TransformationType<FontTransformation> FONT = new TransformationType<>(FontTransformation::canParse, new FontTransformation.Parser());
   public static final TransformationType<GradientTransformation> GRADIENT = new TransformationType<>(GradientTransformation::canParse, new GradientTransformation.Parser());
   public static final TransformationType<RainbowTransformation> RAINBOW = new TransformationType<>(RainbowTransformation::canParse, new RainbowTransformation.Parser());
+  /**
+   * Don't use.
+   *
+   * @deprecated since 4.2.0 this is handled at parser level
+   */
+  @Deprecated
   public static final TransformationType<ResetTransformation> RESET = new TransformationType<>(ResetTransformation::canParse, new ResetTransformation.Parser());
+  /**
+   * Don't use.
+   *
+   * @deprecated since 4.2.0 this is handled at parser level
+   */
+  @Deprecated
   public static final TransformationType<PreTransformation> PRE = new TransformationType<>(PreTransformation::canParse, new PreTransformation.Parser());
 
   final Predicate<String> canParse;

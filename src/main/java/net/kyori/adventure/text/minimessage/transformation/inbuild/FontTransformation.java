@@ -1,7 +1,7 @@
 /*
  * This file is part of adventure-text-minimessage, licensed under the MIT License.
  *
- * Copyright (c) 2018-2020 KyoriPowered
+ * Copyright (c) 2018-2021 KyoriPowered
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,15 +28,15 @@ import java.util.Objects;
 import java.util.stream.Stream;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.minimessage.Tokens;
 import net.kyori.adventure.text.minimessage.parser.ParsingException;
-import net.kyori.adventure.text.minimessage.parser.Token;
-import net.kyori.adventure.text.minimessage.parser.TokenType;
+import net.kyori.adventure.text.minimessage.parser.node.TagPart;
 import net.kyori.adventure.text.minimessage.transformation.Transformation;
 import net.kyori.adventure.text.minimessage.transformation.TransformationParser;
 import net.kyori.examination.ExaminableProperty;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.intellij.lang.annotations.Subst;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * A decoration that applies a font name.
@@ -61,34 +61,37 @@ public final class FontTransformation extends Transformation {
   }
 
   @Override
-  public void load(final String name, final List<Token> args) {
+  public void load(final String name, final List<TagPart> args) {
     super.load(name, args);
 
-    if(Token.oneString(args)) {
-      this.font = Key.key(args.get(0).value());
+    if (args.size() == 1) {
+      @Subst("minecraft:empty") final String fontKey = args.get(0).value();
+      this.font = Key.key(fontKey);
     }
 
-    if(args.size() != 3 || args.get(0).type() != TokenType.STRING || args.get(2).type() != TokenType.STRING) {
-      throw new ParsingException("Doesn't know how to turn " + args + " into a click event", -1);
+    if (args.size() != 2) {
+      throw new ParsingException("Doesn't know how to turn " + args + " into a click event", this.argTokenArray());
     }
 
-    this.font = Key.key(args.get(0).value(), args.get(2).value());
+    @Subst(Key.MINECRAFT_NAMESPACE) final String namespaceKey = args.get(0).value();
+    @Subst("empty") final String fontKey = args.get(1).value();
+    this.font = Key.key(namespaceKey, fontKey);
   }
 
   @Override
-  public Component apply(final Component component, final TextComponent.Builder parent) {
-    return component.style(component.style().font(this.font));
+  public Component apply() {
+    return Component.empty().style(Style.style().font(this.font));
   }
 
   @Override
-  public @NonNull Stream<? extends ExaminableProperty> examinableProperties() {
+  public @NotNull Stream<? extends ExaminableProperty> examinableProperties() {
     return Stream.of(ExaminableProperty.of("font", this.font));
   }
 
   @Override
   public boolean equals(final Object other) {
-    if(this == other) return true;
-    if(other == null || this.getClass() != other.getClass()) return false;
+    if (this == other) return true;
+    if (other == null || this.getClass() != other.getClass()) return false;
     final FontTransformation that = (FontTransformation) other;
     return Objects.equals(this.font, that.font);
   }

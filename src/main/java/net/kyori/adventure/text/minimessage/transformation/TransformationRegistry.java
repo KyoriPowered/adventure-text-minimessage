@@ -1,7 +1,7 @@
 /*
  * This file is part of adventure-text-minimessage, licensed under the MIT License.
  *
- * Copyright (c) 2018-2020 KyoriPowered
+ * Copyright (c) 2018-2021 KyoriPowered
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,16 @@
 package net.kyori.adventure.text.minimessage.transformation;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.minimessage.Context;
 import net.kyori.adventure.text.minimessage.Template;
 import net.kyori.adventure.text.minimessage.parser.ParsingException;
-import net.kyori.adventure.text.minimessage.parser.Token;
+import net.kyori.adventure.text.minimessage.parser.node.TagPart;
 import net.kyori.adventure.text.minimessage.transformation.inbuild.TemplateTransformation;
-
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * A registry of transformation types understood by the MiniMessage parser.
@@ -44,7 +41,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * @since 4.1.0
  */
 public final class TransformationRegistry {
-
   public static final TransformationRegistry EMPTY = new TransformationRegistry();
 
   static {
@@ -69,8 +65,6 @@ public final class TransformationRegistry {
     this.register(TransformationType.FONT);
     this.register(TransformationType.GRADIENT);
     this.register(TransformationType.RAINBOW);
-    this.register(TransformationType.RESET);
-    this.register(TransformationType.PRE);
   }
 
   /**
@@ -81,7 +75,7 @@ public final class TransformationRegistry {
    */
   @SafeVarargs
   public TransformationRegistry(final TransformationType<? extends Transformation>... types) {
-    for(final TransformationType<? extends Transformation> type : types) {
+    for (final TransformationType<? extends Transformation> type : types) {
       this.register(type);
     }
   }
@@ -117,48 +111,36 @@ public final class TransformationRegistry {
    * @return a possible transformation
    * @since 4.1.0
    */
-  public @Nullable Transformation get(final String name, final List<Token> inners, final Map<String, Template.ComponentTemplate> templates, final Function<String, ComponentLike> placeholderResolver, final Context context) {
+  public @Nullable Transformation get(final String name, final List<TagPart> inners, final Map<String, Template> templates, final Function<String, ComponentLike> placeholderResolver, final Context context) {
     // first try if we have a custom placeholder resolver
     final ComponentLike potentialTemplate = placeholderResolver.apply(name);
-    if(potentialTemplate != null) {
+    if (potentialTemplate != null) {
       return this.tryLoad(new TemplateTransformation(new Template.ComponentTemplate(name, potentialTemplate.asComponent())), name, inners, context);
     }
     // then check our registry
-    for(final TransformationType<? extends Transformation> type : this.types) {
-      if(type.canParse.test(name)) {
+    for (final TransformationType<? extends Transformation> type : this.types) {
+      if (type.canParse.test(name)) {
         return this.tryLoad(type.parser.parse(), name, inners, context);
-      } else if(templates.containsKey(name)) {
-        return this.tryLoad(new TemplateTransformation(templates.get(name)), name, inners, context);
+      } else if (templates.containsKey(name)) {
+        final Template template = templates.get(name);
+        // The parser handles StringTemplates
+        if (template instanceof Template.ComponentTemplate) {
+          return this.tryLoad(new TemplateTransformation((Template.ComponentTemplate) template), name, inners, context);
+        }
       }
     }
 
     return null;
   }
 
-  private Transformation tryLoad(final Transformation transformation, final String name, final List<Token> inners, final Context context) {
+  private Transformation tryLoad(final Transformation transformation, final String name, final List<TagPart> inners, final Context context) {
     try {
       transformation.context(context);
-      transformation.load(name, inners);
+      transformation.load(name, inners.subList(1, inners.size()));
       return transformation;
-    } catch(final ParsingException exception) {
-      if(context.isStrict()) {
-        throw exception;
-      }
-      // TODO nicer message format?
-      final List<String> errorMessage = new ArrayList<>(Arrays.asList(
-              "[MiniMessage] Encountered parse exception while trying to load " + transformation.getClass().getSimpleName(),
-              "\tmsg=" + exception.getMessage(),
-              "\twith name=" + name + " and inners=" + inners + "",
-              "\tinput=" + context.ogMessage()
-      ));
-      if(context.replacedMessage() != null) {
-        errorMessage.add("\twith placeholders=" + context.replacedMessage());
-      }
-      if(inners != null && inners.isEmpty()) {
-        errorMessage.add("\thint: did you mean to enter '</" + name + ">'?");
-      }
-      context.miniMessage().parsingErrorMessageConsumer().accept(errorMessage);
-      return null;
+    } catch (final ParsingException exception) {
+      exception.originalText(context.ogMessage());
+      throw exception;
     }
   }
 
@@ -166,28 +148,18 @@ public final class TransformationRegistry {
    * Test if any registered transformation type matches the provided key.
    *
    * @param name tag name
+   * @param placeholderResolver function to resolve other component types
    * @return whether any transformation exists
    * @since 4.1.0
    */
-  public boolean exists(final String name) {
-    for(final TransformationType<? extends Transformation> type : this.types) {
-      if(type.canParse.test(name)) {
-        return true;
-      }
+  public boolean exists(final String name, final Function<String, ComponentLike> placeholderResolver) {
+    // first check the placeholder resolver
+    if (placeholderResolver.apply(name) != null) {
+      return true;
     }
-    return false;
-  }
-
-  /**
-   * Test if any registered onetime transformation type matches the provided key.
-   *
-   * @param name tag name
-   * @return whether any onetime transformation exists
-   * @since 4.1.0
-   */
-  public boolean couldBeOnetimeTransformation(final String name) {
-    for(final TransformationType<? extends Transformation> type : this.types) {
-      if(type.canParse.test(name) && type.parser.parse() instanceof OneTimeTransformation) {
+    // then check registry
+    for (final TransformationType<? extends Transformation> type : this.types) {
+      if (type.canParse.test(name)) {
         return true;
       }
     }

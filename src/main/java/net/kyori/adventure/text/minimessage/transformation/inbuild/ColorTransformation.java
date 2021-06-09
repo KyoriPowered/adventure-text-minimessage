@@ -1,7 +1,7 @@
 /*
  * This file is part of adventure-text-minimessage, licensed under the MIT License.
  *
- * Copyright (c) 2018-2020 KyoriPowered
+ * Copyright (c) 2018-2021 KyoriPowered
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,16 +30,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.minimessage.Tokens;
 import net.kyori.adventure.text.minimessage.parser.ParsingException;
-import net.kyori.adventure.text.minimessage.parser.Token;
+import net.kyori.adventure.text.minimessage.parser.node.TagPart;
 import net.kyori.adventure.text.minimessage.transformation.Transformation;
 import net.kyori.adventure.text.minimessage.transformation.TransformationParser;
 import net.kyori.examination.ExaminableProperty;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * A transformation applying a single text color.
@@ -48,7 +47,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  */
 public final class ColorTransformation extends Transformation {
 
-  private static Map<String, String> colorAliases = new HashMap<>();
+  private static final Map<String, String> colorAliases = new HashMap<>();
 
   static {
     colorAliases.put("dark_grey", "dark_gray");
@@ -77,46 +76,46 @@ public final class ColorTransformation extends Transformation {
   }
 
   @Override
-  public void load(String name, final List<Token> args) {
+  public void load(String name, final List<TagPart> args) {
     super.load(name, args);
 
-    if(name.equalsIgnoreCase(Tokens.COLOR)) {
-      if(Token.oneString(args)) {
+    if (name.equalsIgnoreCase(Tokens.COLOR)) {
+      if (args.size() == 1) {
         name = args.get(0).value();
       } else {
-        throw new ParsingException("Expected to find a color parameter, but found " + args, -1);
+        throw new ParsingException("Expected to find a color parameter, but found " + args, this.argTokenArray());
       }
     }
 
-    if(colorAliases.containsKey(name)) {
+    if (colorAliases.containsKey(name)) {
       name = colorAliases.get(name);
     }
 
-    if(name.charAt(0) == '#') {
+    if (name.charAt(0) == '#') {
       this.color = TextColor.fromHexString(name);
     } else {
       this.color = NamedTextColor.NAMES.value(name.toLowerCase(Locale.ROOT));
     }
 
-    if(this.color == null) {
-      throw new ParsingException("Don't know how to turn '" + name + "' into a color", -1);
+    if (this.color == null) {
+      throw new ParsingException("Don't know how to turn '" + name + "' into a color", this.argTokenArray());
     }
   }
 
   @Override
-  public Component apply(final Component component, final TextComponent.Builder parent) {
-    return component.color(this.color);
+  public Component apply() {
+    return Component.empty().color(this.color);
   }
 
   @Override
-  public @NonNull Stream<? extends ExaminableProperty> examinableProperties() {
+  public @NotNull Stream<? extends ExaminableProperty> examinableProperties() {
     return Stream.of(ExaminableProperty.of("color", this.color));
   }
 
   @Override
   public boolean equals(final Object other) {
-    if(this == other) return true;
-    if(other == null || this.getClass() != other.getClass()) return false;
+    if (this == other) return true;
+    if (other == null || this.getClass() != other.getClass()) return false;
     final ColorTransformation that = (ColorTransformation) other;
     return Objects.equals(this.color, that.color);
   }

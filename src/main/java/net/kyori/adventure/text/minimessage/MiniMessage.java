@@ -1,7 +1,7 @@
 /*
  * This file is part of adventure-text-minimessage, licensed under the MIT License.
  *
- * Copyright (c) 2018-2020 KyoriPowered
+ * Copyright (c) 2018-2021 KyoriPowered
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,10 @@
  */
 package net.kyori.adventure.text.minimessage;
 
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.minimessage.markdown.MarkdownFlavor;
@@ -31,13 +35,7 @@ import net.kyori.adventure.text.minimessage.transformation.TransformationRegistr
 import net.kyori.adventure.text.minimessage.transformation.TransformationType;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.kyori.adventure.util.Buildable;
-
-import org.checkerframework.checker.nullness.qual.NonNull;
-
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * MiniMessage is a textual representation of components.
@@ -55,7 +53,7 @@ public interface MiniMessage extends ComponentSerializer<Component, Component, S
    * @return a simple instance
    * @since 4.0.0
    */
-  static @NonNull MiniMessage get() {
+  static @NotNull MiniMessage get() {
     return MiniMessageImpl.INSTANCE;
   }
 
@@ -68,7 +66,7 @@ public interface MiniMessage extends ComponentSerializer<Component, Component, S
    * @return a instance of markdown support
    * @since 4.0.0
    */
-  static @NonNull MiniMessage markdown() {
+  static @NotNull MiniMessage markdown() {
     return MiniMessageImpl.MARKDOWN;
   }
 
@@ -79,8 +77,8 @@ public interface MiniMessage extends ComponentSerializer<Component, Component, S
    * @return your very own custom MiniMessage instance
    * @since 4.0.0
    */
-  static @NonNull MiniMessage withMarkdownFlavor(final MarkdownFlavor markdownFlavor) {
-    return new MiniMessageImpl(true, markdownFlavor, new TransformationRegistry(), MiniMessageImpl.DEFAULT_PLACEHOLDER_RESOLVER, false, MiniMessageImpl.DEFAULT_ERROR_CONSUMER);
+  static @NotNull MiniMessage withMarkdownFlavor(final MarkdownFlavor markdownFlavor) {
+    return new MiniMessageImpl(true, markdownFlavor, new TransformationRegistry(), MiniMessageImpl.DEFAULT_PLACEHOLDER_RESOLVER, false, null, MiniMessageImpl.DEFAULT_ERROR_CONSUMER);
   }
 
   /**
@@ -91,8 +89,8 @@ public interface MiniMessage extends ComponentSerializer<Component, Component, S
    * @since 4.1.0
    */
   @SafeVarargs
-  static @NonNull MiniMessage withTransformations(final TransformationType<? extends Transformation>... types) {
-    return new MiniMessageImpl(false, MarkdownFlavor.defaultFlavor(), new TransformationRegistry(types), MiniMessageImpl.DEFAULT_PLACEHOLDER_RESOLVER, false, MiniMessageImpl.DEFAULT_ERROR_CONSUMER);
+  static @NotNull MiniMessage withTransformations(final TransformationType<? extends Transformation>... types) {
+    return new MiniMessageImpl(false, MarkdownFlavor.defaultFlavor(), new TransformationRegistry(types), MiniMessageImpl.DEFAULT_PLACEHOLDER_RESOLVER, false, null, MiniMessageImpl.DEFAULT_ERROR_CONSUMER);
   }
 
   /**
@@ -103,8 +101,8 @@ public interface MiniMessage extends ComponentSerializer<Component, Component, S
    * @since 4.1.0
    */
   @SafeVarargs
-  static @NonNull MiniMessage markdownWithTransformations(final TransformationType<? extends Transformation>... types) {
-    return new MiniMessageImpl(true, MarkdownFlavor.defaultFlavor(), new TransformationRegistry(types), MiniMessageImpl.DEFAULT_PLACEHOLDER_RESOLVER, false, MiniMessageImpl.DEFAULT_ERROR_CONSUMER);
+  static @NotNull MiniMessage markdownWithTransformations(final TransformationType<? extends Transformation>... types) {
+    return new MiniMessageImpl(true, MarkdownFlavor.defaultFlavor(), new TransformationRegistry(types), MiniMessageImpl.DEFAULT_PLACEHOLDER_RESOLVER, false, null, MiniMessageImpl.DEFAULT_ERROR_CONSUMER);
   }
 
   /**
@@ -116,8 +114,8 @@ public interface MiniMessage extends ComponentSerializer<Component, Component, S
    * @since 4.1.0
    */
   @SafeVarargs
-  static @NonNull MiniMessage markdownWithTransformations(final MarkdownFlavor markdownFlavor, final TransformationType<? extends Transformation>... types) {
-    return new MiniMessageImpl(true, markdownFlavor, new TransformationRegistry(types), MiniMessageImpl.DEFAULT_PLACEHOLDER_RESOLVER, false, MiniMessageImpl.DEFAULT_ERROR_CONSUMER);
+  static @NotNull MiniMessage markdownWithTransformations(final MarkdownFlavor markdownFlavor, final TransformationType<? extends Transformation>... types) {
+    return new MiniMessageImpl(true, markdownFlavor, new TransformationRegistry(types), MiniMessageImpl.DEFAULT_PLACEHOLDER_RESOLVER, false, null, MiniMessageImpl.DEFAULT_ERROR_CONSUMER);
   }
 
   /**
@@ -129,7 +127,7 @@ public interface MiniMessage extends ComponentSerializer<Component, Component, S
    * @return the output, with escaped tokens
    * @since 4.0.0
    */
-  @NonNull String escapeTokens(final @NonNull String input);
+  @NotNull String escapeTokens(final @NotNull String input);
 
   /**
    * Removes all tokens in the input message.
@@ -140,7 +138,7 @@ public interface MiniMessage extends ComponentSerializer<Component, Component, S
    * @return the output, without tokens
    * @since 4.0.0
    */
-  @NonNull String stripTokens(final @NonNull String input);
+  @NotNull String stripTokens(final @NotNull String input);
 
   /**
    * Parses a string into an component.
@@ -149,7 +147,7 @@ public interface MiniMessage extends ComponentSerializer<Component, Component, S
    * @return the output component
    * @since 4.0.0
    */
-  default Component parse(final @NonNull String input) {
+  default Component parse(final @NotNull String input) {
     return this.deserialize(input);
   }
 
@@ -161,7 +159,7 @@ public interface MiniMessage extends ComponentSerializer<Component, Component, S
    * @return the output component
    * @since 4.1.0
    */
-  @NonNull Component parse(final @NonNull String input, final @NonNull String... placeholders);
+  @NotNull Component parse(final @NotNull String input, final @NotNull String... placeholders);
 
   /**
    * Parses a string into an component, allows passing placeholders in key value pairs.
@@ -171,7 +169,7 @@ public interface MiniMessage extends ComponentSerializer<Component, Component, S
    * @return the output component
    * @since 4.1.0
    */
-  @NonNull Component parse(final @NonNull String input, final @NonNull Map<String, String> placeholders);
+  @NotNull Component parse(final @NotNull String input, final @NotNull Map<String, String> placeholders);
 
   /**
    * Parses a string into an component, allows passing placeholders using key component pairs.
@@ -181,29 +179,29 @@ public interface MiniMessage extends ComponentSerializer<Component, Component, S
    * @return the output component
    * @since 4.1.0
    */
-  @NonNull Component parse(@NonNull String input, @NonNull Object... placeholders);
+  @NotNull Component parse(@NotNull String input, @NotNull Object... placeholders);
 
   /**
    * Parses a string into an component, allows passing placeholders using templates (which support components).
-   * MiniMessage parses placeholders from following syntax: {@code <placeholder_name>} where placeholder_name is {@link Template.StringTemplate#key()}
+   * MiniMessage parses placeholders from following syntax: {@code <placeholder_name>} where placeholder_name is {@link Template#key()}
    *
    * @param input the input string
    * @param placeholders the placeholders
    * @return the output component
    * @since 4.0.0
    */
-  @NonNull Component parse(final @NonNull String input, final @NonNull Template... placeholders);
+  @NotNull Component parse(final @NotNull String input, final @NotNull Template... placeholders);
 
   /**
    * Parses a string into an component, allows passing placeholders using templates (which support components).
-   * MiniMessage parses placeholders from following syntax: {@code <placeholder_name>} where placeholder_name is {@link Template.StringTemplate#key()}
+   * MiniMessage parses placeholders from following syntax: {@code <placeholder_name>} where placeholder_name is {@link Template#key()}
    *
    * @param input the input string
    * @param placeholders the placeholders
    * @return the output component
    * @since 4.0.0
    */
-  @NonNull Component parse(final @NonNull String input, final @NonNull List<Template> placeholders);
+  @NotNull Component parse(final @NotNull String input, final @NotNull List<Template> placeholders);
 
   /**
    * Creates a new {@link MiniMessage.Builder}.
@@ -228,7 +226,7 @@ public interface MiniMessage extends ComponentSerializer<Component, Component, S
      * @return this builder
      * @since 4.0.0
      */
-    @NonNull Builder markdown();
+    @NotNull Builder markdown();
 
     /**
      * Removes all default transformations, allowing you to create a customized set of transformations.
@@ -236,7 +234,7 @@ public interface MiniMessage extends ComponentSerializer<Component, Component, S
      * @return this builder
      * @since 4.1.0
      */
-    @NonNull Builder removeDefaultTransformations();
+    @NotNull Builder removeDefaultTransformations();
 
     /**
      * Adds the given transformation.
@@ -245,7 +243,7 @@ public interface MiniMessage extends ComponentSerializer<Component, Component, S
      * @return this builder
      * @since 4.1.0
      */
-    @NonNull Builder transformation(final TransformationType<? extends Transformation> type);
+    @NotNull Builder transformation(final TransformationType<? extends Transformation> type);
 
     /**
      * Adds the given transformations.
@@ -255,7 +253,7 @@ public interface MiniMessage extends ComponentSerializer<Component, Component, S
      * @since 4.1.0
      */
     @SuppressWarnings("unchecked")
-    @NonNull Builder transformations(final TransformationType<? extends Transformation>... types);
+    @NotNull Builder transformations(final TransformationType<? extends Transformation>... types);
 
     /**
      * Sets the markdown flavor that should be used to parse markdown.
@@ -264,7 +262,7 @@ public interface MiniMessage extends ComponentSerializer<Component, Component, S
      * @return this builder
      * @since 4.1.0
      */
-    @NonNull Builder markdownFlavor(final MarkdownFlavor markdownFlavor);
+    @NotNull Builder markdownFlavor(final MarkdownFlavor markdownFlavor);
 
     /**
      * Sets the placeholder resolve that should handle all (unresolved) placeholders.
@@ -275,19 +273,30 @@ public interface MiniMessage extends ComponentSerializer<Component, Component, S
      * @return this builder
      * @since 4.1.0
      */
-    @NonNull Builder placeholderResolver(final Function<String, ComponentLike> placeholderResolver);
+    @NotNull Builder placeholderResolver(final Function<String, ComponentLike> placeholderResolver);
 
     /**
      * Allows to enable strict mode (disabled by default)
      * <br>
-     * By default, MiniMessage will try to catch some common mistakes and print helpful messages to the console instead of aborting the parse.
-     * This will lead to message that are most likely slightly broken, but don't crash your whole plugin when a user writes slightly malformed syntax into a config.
+     * By default, MiniMessage will allow non-{@link net.kyori.adventure.text.minimessage.transformation.Inserting Inserting} tags to be implicitly closed. When strict mode
+     * is enabled, all non-inserting tags which are {@code <opened>} must be explicitly {@code </closed>} as well.
      *
      * @param strict if strict mode should be enabled
      * @return this builder
      * @since 4.1.0
      */
-    @NonNull Builder strict(boolean strict);
+    @NotNull Builder strict(boolean strict);
+
+    /**
+     * Print debug information to the given output (disabled by default)
+     * <br>
+     * Debug output includes detailed information about the parsing process to help debug parser behavior.
+     *
+     * @param debugOutput if debug mode should be enabled
+     * @return this builder
+     * @since 4.2.0
+     */
+    @NotNull Builder debug(Appendable debugOutput);
 
     /**
      * If in lenient mode, MiniMessage will output helpful messages. This method allows you to change how they should be printed. By default, they will be printed to standard out.
@@ -296,7 +305,7 @@ public interface MiniMessage extends ComponentSerializer<Component, Component, S
      * @return this builder
      * @since 4.1.0
      */
-    @NonNull Builder parsingErrorMessageConsumer(final Consumer<List<String>> consumer);
+    @NotNull Builder parsingErrorMessageConsumer(final Consumer<List<String>> consumer);
 
     /**
      * Builds the serializer.
@@ -305,6 +314,6 @@ public interface MiniMessage extends ComponentSerializer<Component, Component, S
      * @since 4.0.0
      */
     @Override
-    @NonNull MiniMessage build();
+    @NotNull MiniMessage build();
   }
 }

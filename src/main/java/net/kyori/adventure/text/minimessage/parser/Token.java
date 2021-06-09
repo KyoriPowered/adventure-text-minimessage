@@ -1,7 +1,7 @@
 /*
  * This file is part of adventure-text-minimessage, licensed under the MIT License.
  *
- * Copyright (c) 2018-2020 KyoriPowered
+ * Copyright (c) 2018-2021 KyoriPowered
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,109 +24,89 @@
 package net.kyori.adventure.text.minimessage.parser;
 
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import net.kyori.examination.Examinable;
-import net.kyori.examination.ExaminableProperty;
-import net.kyori.examination.string.StringExaminer;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
- * A parsed token from the lexer.
+ * Represents a token for the lexer.
  *
- * @since 4.1.0
+ * @since 4.2.0
  */
-public final class Token implements Examinable {
-  // TODO token should have a char pointer/counter to point to the index where it begins, for nice error messages
-  private final String value;
+public final class Token {
+  private final int startIndex;
+  private final int endIndex;
   private final TokenType type;
 
-  /**
-   * Create a new value-less token of the provided type.
-   *
-   * @param type the token type
-   * @since 4.1.0
-   */
-  public Token(final TokenType type) {
-    this(type, type.value());
-  }
+  private List<Token> childTokens = null;
 
   /**
-   * Create a new plain text token of the provided value.
+   * Creates a new token.
    *
-   * @param value the content of the token
-   * @since 4.1.0
+   * @param startIndex the start index of the token
+   * @param endIndex the end index of the token
+   * @param type the type of the token
+   * @since 4.2.0
    */
-  public Token(final String value) {
-    this(TokenType.STRING, value);
-  }
-
-  /**
-   * Create a new token of the provided type with a customized value.
-   *
-   * @param type the type of token
-   * @param value the contents of the token
-   * @since 4.1.0
-   */
-  public Token(final TokenType type, final String value) {
+  public Token(final int startIndex, final int endIndex, final TokenType type) {
+    this.startIndex = startIndex;
+    this.endIndex = endIndex;
     this.type = type;
-    this.value = value;
   }
 
   /**
-   * Get the type of token matched.
+   * Returns the start index of this token.
    *
-   * @return the token type
-   * @since 4.1.0
+   * @return the start index
+   * @since 4.2.0
+   */
+  public int startIndex() {
+    return this.startIndex;
+  }
+
+  /**
+   * Returns the end index of this token.
+   *
+   * @return the end index
+   * @since 4.2.0
+   */
+  public int endIndex() {
+    return this.endIndex;
+  }
+
+  /**
+   * Returns the type of this token.
+   *
+   * @return the type
+   * @since 4.2.0
    */
   public TokenType type() {
     return this.type;
   }
 
   /**
-   * Get the literal matched value.
+   * Returns the children of this token.
    *
-   * <p>This may be different than the {@link TokenType#value() default value} for the token type</p>
-   *
-   * @return the token value
-   * @since 4.1.0
+   * @return the child tokens
+   * @since 4.2.0
    */
-  public String value() {
-    return this.value;
+  public List<Token> childTokens() {
+    return this.childTokens;
   }
 
   /**
-   * Test if a token list contains one single string token.
+   * Sets the children of this token.
    *
-   * @param tokens tokens to test
-   * @return if the token list contains only one single string
-   * @since 4.1.0
+   * @param childTokens the new children
+   * @since 4.2.0
    */
-  public static boolean oneString(final List<Token> tokens) {
-    return tokens.size() == 1 && tokens.get(0).type() == TokenType.STRING;
-  }
-
-  /**
-   * Get the plain-text values of tokens joined together.
-   *
-   * @param args the tokens
-   * @return a joined token string
-   * @since 4.1.0
-   */
-  public static String asValueString(final List<Token> args) {
-    return args.stream().map(Token::value).collect(Collectors.joining());
-  }
-
-  @Override
-  public @NonNull Stream<? extends ExaminableProperty> examinableProperties() {
-    return Stream.of(
-      ExaminableProperty.of("type", this.type),
-      ExaminableProperty.of("value", this.value)
-    );
+  public void childTokens(final List<Token> childTokens) {
+    this.childTokens = childTokens;
   }
 
   @Override
   public String toString() {
-    return this.examine(StringExaminer.simpleEscaping());
+    return "Token{" +
+      "startIndex=" + this.startIndex +
+      ", endIndex=" + this.endIndex +
+      ", type=" + this.type +
+      '}';
   }
 }

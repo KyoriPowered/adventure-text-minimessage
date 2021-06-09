@@ -21,53 +21,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.text.minimessage.markdown;
+package net.kyori.adventure.text.minimessage.parser.node;
+
+import net.kyori.adventure.text.minimessage.parser.Token;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
- * MiniMessage's original markdown flavour.
+ * Represents a template replacement in a string.
  *
- * @deprecated The legacy flavor never made any sense, don't use
- * @since 4.1.0
+ * @since 4.2.0
  */
-@Deprecated
-public final class LegacyFlavor implements MarkdownFlavor {
-  private static final LegacyFlavor INSTANCE = new LegacyFlavor();
-
-  private LegacyFlavor() {
-  }
-
+public class TemplateNode extends ValueNode {
   /**
-   * Get an instance of the legacy markdown flavour.
+   * Creates a new element node.
    *
-   * @return the flavour instance
-   * @since 4.1.0
+   * @param parent        the parent of this node
+   * @param token         the token that created this node
+   * @param sourceMessage the source message
+   * @since 4.2.0
    */
-  public static MarkdownFlavor get() {
-    return INSTANCE;
+  public TemplateNode(
+    final @Nullable ElementNode parent,
+    final @NotNull Token token,
+    final @NotNull String sourceMessage,
+    final @NotNull String actualValue
+  ) {
+    super(parent, token, sourceMessage, actualValue);
   }
 
   @Override
-  public boolean isBold(final char current, final char next) {
-    return (current == '*' && next == current) || (current == '_' && next == current);
-  }
-
-  @Override
-  public boolean isItalic(final char current, final char next) {
-    return (current == '*' && next != current) || (current == '_' && next != current);
-  }
-
-  @Override
-  public boolean isUnderline(final char current, final char next) {
-    return current == '~' && next == current;
-  }
-
-  @Override
-  public boolean isStrikeThrough(final char current, final char next) {
-    return false;
-  }
-
-  @Override
-  public boolean isObfuscate(final char current, final char next) {
-    return current == '|' && next == current;
+  String valueName() {
+    return "TemplateNode";
   }
 }

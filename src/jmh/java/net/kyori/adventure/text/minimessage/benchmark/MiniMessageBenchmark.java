@@ -1,7 +1,7 @@
 /*
  * This file is part of adventure-text-minimessage, licensed under the MIT License.
  *
- * Copyright (c) 2018-2020 KyoriPowered
+ * Copyright (c) 2018-2021 KyoriPowered
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,47 +23,41 @@
  */
 package net.kyori.adventure.text.minimessage.benchmark;
 
+import java.util.concurrent.TimeUnit;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 
-import java.util.concurrent.TimeUnit;
-
+@Fork(value = 1, warmups = 1)
+@BenchmarkMode(Mode.SampleTime)
+@OutputTimeUnit(TimeUnit.MICROSECONDS)
 public class MiniMessageBenchmark {
 
-    @Benchmark
-    @BenchmarkMode(Mode.SampleTime)
-    @OutputTimeUnit(TimeUnit.MICROSECONDS)
-    public Component testNiceMix() {
-        final String input = "<yellow><test> random <gradient:red:blue:green><bold>stranger</gradient></bold><click:run_command:test command><underlined><red>click here</click><blue> to <rainbow><b>FEEL</rainbow></underlined> it";
-        return MiniMessage.get().parse(input);
-    }
+  @Benchmark
+  public Component testNiceMix() {
+    final String input = "<yellow><test> random <gradient:red:blue:green><bold>stranger</gradient></bold><click:run_command:test command><underlined><red>click here</click><blue> to <rainbow><b>FEEL</rainbow></underlined> it";
+    return MiniMessage.get().parse(input);
+  }
 
-    @Benchmark
-    @BenchmarkMode(Mode.SampleTime)
-    @OutputTimeUnit(TimeUnit.MICROSECONDS)
-    public Component testSimple() {
-        final String input = "<yellow><test><bold>stranger";
-        return MiniMessage.get().parse(input, "test", "test2");
-    }
+  @Benchmark
+  public Component testSimple() {
+    final String input = "<yellow><test><bold>stranger";
+    return MiniMessage.get().parse(input, "test", "test2");
+  }
 
-    @Benchmark
-    @BenchmarkMode(Mode.SampleTime)
-    @OutputTimeUnit(TimeUnit.MICROSECONDS)
-    public Component testGradient() {
-        final String input = "<gradient:red:blue:green>COLORS ARE COOL";
-        return MiniMessage.get().parse(input);
-    }
+  @Benchmark
+  public Component testGradient() {
+    final String input = "<gradient:red:blue:green>COLORS ARE COOL";
+    return MiniMessage.get().parse(input);
+  }
 
-    @Benchmark
-    @BenchmarkMode(Mode.SampleTime)
-    @OutputTimeUnit(TimeUnit.MICROSECONDS)
-    public Component testRainbow() {
-        final String input = "<rainbow>COLORS ARE COOL";
-        return MiniMessage.get().parse(input);
-    }
+  @Benchmark
+  public Component testRainbow() {
+    final String input = "<rainbow>COLORS ARE COOL";
+    return MiniMessage.get().parse(input);
+  }
 }

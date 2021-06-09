@@ -21,53 +21,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.text.minimessage.markdown;
+package net.kyori.adventure.text.minimessage.parser.node;
+
+import net.kyori.adventure.text.minimessage.parser.Token;
+import net.kyori.adventure.text.minimessage.parser.TokenParser;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
- * MiniMessage's original markdown flavour.
+ * Represents a string of chars.
  *
- * @deprecated The legacy flavor never made any sense, don't use
- * @since 4.1.0
+ * @since 4.2.0
  */
-@Deprecated
-public final class LegacyFlavor implements MarkdownFlavor {
-  private static final LegacyFlavor INSTANCE = new LegacyFlavor();
-
-  private LegacyFlavor() {
-  }
-
+public final class TextNode extends ValueNode {
   /**
-   * Get an instance of the legacy markdown flavour.
+   * Creates a new text node.
    *
-   * @return the flavour instance
-   * @since 4.1.0
+   * @param parent the parent of this node
+   * @param token the token that created this node
+   * @param sourceMessage the source message
+   * @since 4.2.0
    */
-  public static MarkdownFlavor get() {
-    return INSTANCE;
+  public TextNode(
+    final @Nullable ElementNode parent,
+    final @NotNull Token token,
+    final @NotNull String sourceMessage
+  ) {
+    super(parent, token, sourceMessage, TokenParser.unescape(sourceMessage, token.startIndex(), token.endIndex()));
   }
 
   @Override
-  public boolean isBold(final char current, final char next) {
-    return (current == '*' && next == current) || (current == '_' && next == current);
-  }
-
-  @Override
-  public boolean isItalic(final char current, final char next) {
-    return (current == '*' && next != current) || (current == '_' && next != current);
-  }
-
-  @Override
-  public boolean isUnderline(final char current, final char next) {
-    return current == '~' && next == current;
-  }
-
-  @Override
-  public boolean isStrikeThrough(final char current, final char next) {
-    return false;
-  }
-
-  @Override
-  public boolean isObfuscate(final char current, final char next) {
-    return current == '|' && next == current;
+  String valueName() {
+    return "TextNode";
   }
 }

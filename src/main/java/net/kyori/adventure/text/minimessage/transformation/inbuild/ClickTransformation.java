@@ -1,7 +1,7 @@
 /*
  * This file is part of adventure-text-minimessage, licensed under the MIT License.
  *
- * Copyright (c) 2018-2020 KyoriPowered
+ * Copyright (c) 2018-2021 KyoriPowered
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,16 +28,14 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.minimessage.Tokens;
 import net.kyori.adventure.text.minimessage.parser.ParsingException;
-import net.kyori.adventure.text.minimessage.parser.Token;
-import net.kyori.adventure.text.minimessage.parser.TokenType;
+import net.kyori.adventure.text.minimessage.parser.node.TagPart;
 import net.kyori.adventure.text.minimessage.transformation.Transformation;
 import net.kyori.adventure.text.minimessage.transformation.TransformationParser;
 import net.kyori.examination.ExaminableProperty;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * A transformation applying a click event.
@@ -63,34 +61,24 @@ public final class ClickTransformation extends Transformation {
   }
 
   @Override
-  public void load(final String name, final List<Token> args) {
+  public void load(final String name, final List<TagPart> args) {
     super.load(name, args);
 
-    if(args.size() >= 3 && args.get(0).type() == TokenType.STRING && args.get(2).type() == TokenType.STRING) {
+    if (args.size() == 2) {
       this.action = ClickEvent.Action.NAMES.value(args.get(0).value().toLowerCase(Locale.ROOT));
-      this.value = Token.asValueString(args.subList(2, args.size()));
-    } else if(args.size() >= 5 && args.get(0).type() == TokenType.STRING && startsAndEndsWithQuotes(args.subList(2, args.size()))) {
-      this.action = ClickEvent.Action.NAMES.value(args.get(0).value().toLowerCase(Locale.ROOT));
-      this.value = Token.asValueString(args.subList(3, args.size() - 1));
+      this.value = args.get(1).value();
     } else {
-      throw new ParsingException("Don't know how to turn " + args + " into a click event", -1);
+      throw new ParsingException("Don't know how to turn " + args + " into a click event", this.argTokenArray());
     }
   }
 
-  static boolean startsAndEndsWithQuotes(final @NonNull List<Token> args) {
-    final TokenType startType = args.get(0).type();
-    final TokenType endType = args.get(args.size() - 1).type();
-    return startType == TokenType.SINGLE_QUOTE_START && endType == TokenType.SINGLE_QUOTE_END
-            || startType == TokenType.DOUBLE_QUOTE_START && endType == TokenType.DOUBLE_QUOTE_END;
+  @Override
+  public Component apply() {
+    return Component.empty().clickEvent(ClickEvent.clickEvent(this.action, this.value));
   }
 
   @Override
-  public Component apply(final Component component, final TextComponent.Builder parent) {
-    return component.clickEvent(ClickEvent.clickEvent(this.action, this.value));
-  }
-
-  @Override
-  public @NonNull Stream<? extends ExaminableProperty> examinableProperties() {
+  public @NotNull Stream<? extends ExaminableProperty> examinableProperties() {
     return Stream.of(
       ExaminableProperty.of("action", this.action),
       ExaminableProperty.of("value", this.value)
@@ -99,8 +87,8 @@ public final class ClickTransformation extends Transformation {
 
   @Override
   public boolean equals(final Object other) {
-    if(this == other) return true;
-    if(other == null || this.getClass() != other.getClass()) return false;
+    if (this == other) return true;
+    if (other == null || this.getClass() != other.getClass()) return false;
     final ClickTransformation that = (ClickTransformation) other;
     return this.action == that.action && Objects.equals(this.value, that.value);
   }

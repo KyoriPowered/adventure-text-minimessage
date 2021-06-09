@@ -1,7 +1,7 @@
 /*
  * This file is part of adventure-text-minimessage, licensed under the MIT License.
  *
- * Copyright (c) 2018-2020 KyoriPowered
+ * Copyright (c) 2018-2021 KyoriPowered
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,58 +23,149 @@
  */
 package net.kyori.adventure.text.minimessage.parser;
 
-import net.kyori.adventure.text.minimessage.ParseException;
-
-import org.checkerframework.checker.nullness.qual.Nullable;
+import java.util.Arrays;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * An exception that happens while parsing.
  *
  * @since 4.1.0
  */
-public class ParsingException extends ParseException {
-  private static final long serialVersionUID = 2507190809441787201l;
+public class ParsingException extends RuntimeException {
+  private static final long serialVersionUID = 2507190809441787201L;
 
-  private String message;
-  private final int column;
+  private @Nullable String originalText;
+  private Token @NotNull [] tokens;
 
   /**
    * Create a new parsing exception.
    *
    * @param message the detail message
-   * @param column character index into the text where the parse error occurred.
+   * @param originalText the origina text which was parsed
+   * @param tokens the token which caused the error
    * @since 4.1.0
    */
-  public ParsingException(final String message, final int column) {
+  public ParsingException(
+    final String message,
+    final @Nullable String originalText,
+    final @NotNull Token @NotNull ... tokens
+  ) {
     super(message);
-    this.message = message;
-    this.column = column;
+    this.tokens = tokens;
+    this.originalText = originalText;
+  }
+
+  /**
+   * Create a new parsing exception.
+   *
+   * @param message the detail message
+   * @param originalText the origina text which was parsed
+   * @param cause the cause
+   * @param tokens the token which caused the error
+   * @since 4.1.0
+   */
+  public ParsingException(
+    final String message,
+    final @Nullable String originalText,
+    final @Nullable Throwable cause,
+    final @NotNull Token @NotNull ... tokens
+  ) {
+    super(message, cause);
+    this.tokens = tokens;
+    this.originalText = originalText;
+  }
+
+  /**
+   * Create a new parsing exception.
+   *
+   * @param message the detail message
+   * @param tokens the token which caused the error
+   * @since 4.1.0
+   */
+  public ParsingException(final String message, final @NotNull Token @NotNull ... tokens) {
+    this(message, null, null, tokens);
+  }
+
+  /**
+   * Create a new parsing exception.
+   *
+   * @param message the detail message
+   * @param cause the cause
+   * @param tokens the token which caused the error
+   * @since 4.1.0
+   */
+  public ParsingException(
+    final String message,
+    final @Nullable Throwable cause,
+    final @NotNull Token @NotNull ... tokens
+  ) {
+    this(message, null, cause, tokens);
   }
 
   @Override
   public String getMessage() {
-    return this.message;
+    final String arrowInfo = this.tokens().length != 0
+      ? "\n\t" + this.arrow()
+      : "";
+    final String messageInfo = this.originalText() != null
+      ? "\n\t" + this.originalText() + arrowInfo
+      : "";
+    return super.getMessage() + messageInfo;
   }
 
   /**
-   * Set this exception's message.
+   * Get the message which caused this exception.
    *
-   * @param message the new message
-   * @since 4.1.0
+   * @return the original message
+   * @since 4.2.0
    */
-  public void message(final @Nullable String message) {
-    this.message = message;
+  public @Nullable String originalText() {
+    return this.originalText;
   }
 
   /**
-   * Get the column this exception was triggered at.
+   * Set the message which caused this exception.
    *
-   * <p>If the column is unknown, {@code -1} will be returned.</p>
+   * @param originalText the original message
+   * @since 4.2.0
+   */
+  public void originalText(final @NotNull String originalText) {
+    this.originalText = originalText;
+  }
+
+  /**
+   * Gets the tokens associated with this parsing error.
    *
-   * @return the context column
+   * @return the tokens for this error
    * @since 4.1.0
    */
-  public int column() {
-    return this.column;
+  public @NotNull Token @NotNull [] tokens() {
+    return this.tokens;
+  }
+
+  /**
+   * Sets the tokens associated with this parsing error.
+   *
+   * @param tokens the tokens for this error
+   * @since 4.2.0
+   */
+  public void tokens(final @NotNull Token @NotNull [] tokens) {
+    this.tokens = tokens;
+  }
+
+  private String arrow() {
+    final @NotNull Token[] ts = this.tokens();
+    final char[] chars = new char[ts[ts.length - 1].endIndex()];
+
+    int i = 0;
+    for (final Token t : ts) {
+      Arrays.fill(chars, i, t.startIndex(), ' ');
+      chars[t.startIndex()] = '^';
+      Arrays.fill(chars, t.startIndex() + 1, t.endIndex() - 1, '~');
+      chars[t.endIndex() - 1] = '^';
+      i = t.endIndex();
+    }
+    return new String(chars);
   }
 }

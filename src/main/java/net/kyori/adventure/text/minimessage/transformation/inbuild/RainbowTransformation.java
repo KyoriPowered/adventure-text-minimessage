@@ -1,7 +1,7 @@
 /*
  * This file is part of adventure-text-minimessage, licensed under the MIT License.
  *
- * Copyright (c) 2018-2020 KyoriPowered
+ * Copyright (c) 2018-2021 KyoriPowered
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,6 @@
  */
 package net.kyori.adventure.text.minimessage.transformation.inbuild;
 
-import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
 import java.util.PrimitiveIterator;
@@ -33,20 +32,25 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.minimessage.Tokens;
 import net.kyori.adventure.text.minimessage.parser.ParsingException;
-import net.kyori.adventure.text.minimessage.parser.Token;
-import net.kyori.adventure.text.minimessage.transformation.Inserting;
-import net.kyori.adventure.text.minimessage.transformation.OneTimeTransformation;
+import net.kyori.adventure.text.minimessage.parser.node.ElementNode;
+import net.kyori.adventure.text.minimessage.parser.node.TagPart;
+import net.kyori.adventure.text.minimessage.parser.node.ValueNode;
+import net.kyori.adventure.text.minimessage.transformation.Modifying;
 import net.kyori.adventure.text.minimessage.transformation.Transformation;
 import net.kyori.adventure.text.minimessage.transformation.TransformationParser;
 import net.kyori.examination.ExaminableProperty;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Applies rainbow color to a component.
  *
  * @since 4.1.0
  */
-public final class RainbowTransformation extends OneTimeTransformation implements Inserting {
+public final class RainbowTransformation extends Transformation implements Modifying {
+
+  private int size;
+  private int disableApplyingColorDepth = -1;
+
   private int colorIndex = 0;
 
   private float center = 128;
@@ -70,44 +74,74 @@ public final class RainbowTransformation extends OneTimeTransformation implement
   }
 
   @Override
-  public void load(final String name, final List<Token> args) {
+  public void load(final String name, final List<TagPart> args) {
     super.load(name, args);
 
-    if(Token.oneString(args)) {
+    if (args.size() == 1) {
       try {
         this.phase = Integer.parseInt(args.get(0).value());
-      } catch(final NumberFormatException ex) {
-        throw new ParsingException("Expected phase, got " + args.get(0).value(), -1);
+      } catch (final NumberFormatException ex) {
+        throw new ParsingException("Expected phase, got " + args.get(0), this.argTokenArray());
       }
     }
   }
 
   @Override
-  public Component applyOneTime(final @NonNull Component current, final TextComponent.@NonNull Builder parent, final @NonNull Deque<Transformation> transformations) {
-    if(current instanceof TextComponent) {
+  public void visit(final ElementNode curr) {
+    if (curr instanceof ValueNode) {
+      final String value = ((ValueNode) curr).value();
+      this.size += value.codePointCount(0, value.length());
+    }
+  }
+
+  @Override
+  public Component apply() {
+    // init
+    this.center = 128;
+    this.width = 127;
+    this.frequency = Math.PI * 2 / this.size;
+
+    return Component.empty();
+  }
+
+  @Override
+  public Component apply(final Component current, final int depth) {
+    if ((this.disableApplyingColorDepth != -1 && depth >= this.disableApplyingColorDepth) || current.style().color() != null) {
+      if (this.disableApplyingColorDepth == -1) {
+        this.disableApplyingColorDepth = depth;
+      }
+      // This component has it's own color applied, which overrides ours
+      // We still want to keep track of where we are though if this is text
+      if (current instanceof TextComponent) {
+        final String content = ((TextComponent) current).content();
+        final int len = content.codePointCount(0, content.length());
+        for (int i = 0; i < len; i++) {
+          // increment our color index
+          this.color(this.phase);
+        }
+      }
+      return current;
+    }
+
+    this.disableApplyingColorDepth = -1;
+    if (current instanceof TextComponent && ((TextComponent) current).content().length() > 0) {
       final TextComponent textComponent = (TextComponent) current;
       final String content = textComponent.content();
 
-      // init
-      this.center = 128;
-      this.width = 127;
-      this.frequency = Math.PI * 2 / content.length();
+      Component parent = Component.empty();
 
       // apply
-      int charSize;
-      final char[] holder = new char[2];
-      for(final PrimitiveIterator.OfInt it = content.codePoints().iterator(); it.hasNext();) {
-        charSize = Character.toChars(it.nextInt(), holder, 0);
-        Component comp = Component.text(new String(holder, 0, charSize));
-        comp = this.merge(comp, current);
-        comp = comp.color(this.color(this.phase));
-        parent.append(comp);
+      final int[] holder = new int[1];
+      for (final PrimitiveIterator.OfInt it = content.codePoints().iterator(); it.hasNext();) {
+        holder[0] = it.nextInt();
+        final Component comp = Component.text(new String(holder, 0, 1), this.color(this.phase));
+        parent = parent.append(comp);
       }
 
-      return null;
+      return parent;
     }
 
-    throw new ParsingException("Expected Text Comp", -1);
+    return Component.empty().mergeStyle(current);
   }
 
   private TextColor color(final float phase) {
@@ -119,14 +153,14 @@ public final class RainbowTransformation extends OneTimeTransformation implement
   }
 
   @Override
-  public @NonNull Stream<? extends ExaminableProperty> examinableProperties() {
+  public @NotNull Stream<? extends ExaminableProperty> examinableProperties() {
     return Stream.of(ExaminableProperty.of("phase", this.phase));
   }
 
   @Override
   public boolean equals(final Object other) {
-    if(this == other) return true;
-    if(other == null || this.getClass() != other.getClass()) return false;
+    if (this == other) return true;
+    if (other == null || this.getClass() != other.getClass()) return false;
     final RainbowTransformation that = (RainbowTransformation) other;
     return this.colorIndex == that.colorIndex
       && Float.compare(that.center, this.center) == 0

@@ -21,53 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.text.minimessage.markdown;
+package net.kyori.adventure.text.minimessage.transformation;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.parser.node.ElementNode;
 
 /**
- * MiniMessage's original markdown flavour.
+ * Transformations implementing this interface can transform a whole subtree of nodes.
  *
- * @deprecated The legacy flavor never made any sense, don't use
- * @since 4.1.0
+ * @since 4.2.0
  */
-@Deprecated
-public final class LegacyFlavor implements MarkdownFlavor {
-  private static final LegacyFlavor INSTANCE = new LegacyFlavor();
-
-  private LegacyFlavor() {
-  }
+public interface Modifying {
 
   /**
-   * Get an instance of the legacy markdown flavour.
+   * This method gets called once for every element in the sub tree, allowing you to do calculations beforehand.
    *
-   * @return the flavour instance
-   * @since 4.1.0
+   * @param curr the current element in the sub tree
+   * @since 4.2.0
    */
-  public static MarkdownFlavor get() {
-    return INSTANCE;
-  }
+  void visit(ElementNode curr);
 
-  @Override
-  public boolean isBold(final char current, final char next) {
-    return (current == '*' && next == current) || (current == '_' && next == current);
-  }
-
-  @Override
-  public boolean isItalic(final char current, final char next) {
-    return (current == '*' && next != current) || (current == '_' && next != current);
-  }
-
-  @Override
-  public boolean isUnderline(final char current, final char next) {
-    return current == '~' && next == current;
-  }
-
-  @Override
-  public boolean isStrikeThrough(final char current, final char next) {
-    return false;
-  }
-
-  @Override
-  public boolean isObfuscate(final char current, final char next) {
-    return current == '|' && next == current;
-  }
+  /**
+   * Applies this transformation for the current component.
+   * This gets called after the component tree has been assembled, but you are free to modify it however you like.
+   *
+   * @param curr the current component
+   * @param depth the depth of the tree the current component is at
+   * @return the new parent
+   * @since 4.2.0
+   */
+  Component apply(Component curr, int depth);
 }

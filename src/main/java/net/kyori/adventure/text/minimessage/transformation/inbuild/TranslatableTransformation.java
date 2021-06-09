@@ -1,7 +1,7 @@
 /*
  * This file is part of adventure-text-minimessage, licensed under the MIT License.
  *
- * Copyright (c) 2018-2020 KyoriPowered
+ * Copyright (c) 2018-2021 KyoriPowered
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,31 +24,26 @@
 package net.kyori.adventure.text.minimessage.transformation.inbuild;
 
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.Tokens;
 import net.kyori.adventure.text.minimessage.parser.ParsingException;
-import net.kyori.adventure.text.minimessage.parser.Token;
-import net.kyori.adventure.text.minimessage.parser.TokenType;
+import net.kyori.adventure.text.minimessage.parser.node.TagPart;
 import net.kyori.adventure.text.minimessage.transformation.Inserting;
-import net.kyori.adventure.text.minimessage.transformation.OneTimeTransformation;
 import net.kyori.adventure.text.minimessage.transformation.Transformation;
 import net.kyori.adventure.text.minimessage.transformation.TransformationParser;
 import net.kyori.examination.ExaminableProperty;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Insert a translation component into the result.
  *
  * @since 4.1.0
  */
-public class TranslatableTransformation extends OneTimeTransformation implements Inserting {
+public class TranslatableTransformation extends Transformation implements Inserting {
   private static final Pattern DUM_SPLIT_PATTERN = Pattern.compile("['\"]:['\"]");
 
   /**
@@ -60,55 +55,50 @@ public class TranslatableTransformation extends OneTimeTransformation implements
    */
   public static boolean canParse(final String name) {
     return name.equalsIgnoreCase(Tokens.TRANSLATABLE)
-           || name.equalsIgnoreCase(Tokens.TRANSLATABLE_2)
-           || name.equalsIgnoreCase(Tokens.TRANSLATABLE_3);
+      || name.equalsIgnoreCase(Tokens.TRANSLATABLE_2)
+      || name.equalsIgnoreCase(Tokens.TRANSLATABLE_3);
   }
 
   private String key;
   private final List<Component> inners = new ArrayList<>();
 
   @Override
-  public void load(final String name, final List<Token> args) {
+  public void load(final String name, final List<TagPart> args) {
     super.load(name, args);
 
-    if(args.isEmpty() || args.get(0).type() != TokenType.STRING) {
-      throw new ParsingException("Doesn't know how to turn " + args + " into a translatable component", -1);
+    if (args.isEmpty()) {
+      throw new ParsingException("Doesn't know how to turn " + args + " into a translatable component", this.argTokenArray());
     }
 
     this.key = args.get(0).value();
-    if(args.size() > 1) {
-      String string = Token.asValueString(args.subList(2, args.size()));
-      if(string.startsWith("'") || string.startsWith("\"")) {
-        string = string.substring(1).substring(0, string.length() - 2);
-      }
-      for(final String in : DUM_SPLIT_PATTERN.split(string)) {
-        this.inners.add(MiniMessage.get().parse(in)); // TODO this uses a hardcoded instance, there gotta be a better way
+    if (args.size() > 1) {
+      for (final TagPart in : args.subList(1, args.size())) {
+        this.inners.add(this.context.parse(in.value()));
       }
     }
   }
 
   @Override
-  public Component applyOneTime(final @NonNull Component current, final TextComponent.@NonNull Builder parent, final @NonNull Deque<Transformation> transformations) {
-    if(!this.inners.isEmpty()) {
-      parent.append(this.merge(Component.translatable(this.key, this.inners), current));
+  public Component apply() {
+    if (this.inners.isEmpty()) {
+      return Component.translatable(this.key);
     } else {
-      parent.append(this.merge(Component.translatable(this.key), current));
+      return Component.translatable(this.key, this.inners);
     }
-    return current;
   }
 
   @Override
-  public @NonNull Stream<? extends ExaminableProperty> examinableProperties() {
+  public @NotNull Stream<? extends ExaminableProperty> examinableProperties() {
     return Stream.of(
-            ExaminableProperty.of("key", this.key),
-            ExaminableProperty.of("inners", this.inners)
+      ExaminableProperty.of("key", this.key),
+      ExaminableProperty.of("inners", this.inners)
     );
   }
 
   @Override
   public boolean equals(final Object other) {
-    if(this == other) return true;
-    if(other == null || this.getClass() != other.getClass()) return false;
+    if (this == other) return true;
+    if (other == null || this.getClass() != other.getClass()) return false;
     final TranslatableTransformation that = (TranslatableTransformation) other;
     return Objects.equals(this.key, that.key)
       && Objects.equals(this.inners, that.inners);

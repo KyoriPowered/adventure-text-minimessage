@@ -21,51 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.text.minimessage.markdown;
-
 /**
- * The discord flavour of markdown.
- *
- * @since 4.1.0
+ * Transformations.
  */
-public final class DiscordFlavor implements MarkdownFlavor {
-  private static final DiscordFlavor INSTANCE = new DiscordFlavor();
-
-  private DiscordFlavor() {
-  }
-
-  /**
-   * Get an instance of discord-flavoured Markdown.
-   *
-   * @return an instance
-   * @since 4.1.0
-   */
-  public static MarkdownFlavor get() {
-    return INSTANCE;
-  }
-
-  @Override
-  public boolean isBold(final char current, final char next) {
-    return current == '*' && next == current;
-  }
-
-  @Override
-  public boolean isItalic(final char current, final char next) {
-    return current == '*' && next != current;
-  }
-
-  @Override
-  public boolean isUnderline(final char current, final char next) {
-    return current == '_' && next == current;
-  }
-
-  @Override
-  public boolean isStrikeThrough(final char current, final char next) {
-    return current == '~' && next == current;
-  }
-
-  @Override
-  public boolean isObfuscate(final char current, final char next) {
-    return current == '|' && next == current;
-  }
-}
+package net.kyori.adventure.text.minimessage.transformation;

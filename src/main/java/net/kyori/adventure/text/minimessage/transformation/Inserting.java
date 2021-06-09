@@ -1,7 +1,7 @@
 /*
  * This file is part of adventure-text-minimessage, licensed under the MIT License.
  *
- * Copyright (c) 2018-2020 KyoriPowered
+ * Copyright (c) 2018-2021 KyoriPowered
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,9 +24,9 @@
 package net.kyori.adventure.text.minimessage.transformation;
 
 /**
- * Marker for transformations that add additional {@link net.kyori.adventure.text.Component Components}.
+ * Marker interface for transformations that insert text or components, but have no children.
  *
- * @since 4.1.0
+ * @since 4.2.0
  */
 public interface Inserting {
 }

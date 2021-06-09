@@ -1,7 +1,7 @@
 /*
  * This file is part of adventure-text-minimessage, licensed under the MIT License.
  *
- * Copyright (c) 2018-2020 KyoriPowered
+ * Copyright (c) 2018-2021 KyoriPowered
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,26 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.text.minimessage;
-
-import org.checkerframework.checker.nullness.qual.NonNull;
-
 /**
- * Exception that is thrown whenever the parser isn't happy. The message will include information about what went wrong.
- *
- * @since 4.1.0
+ * Parser.
  */
-public class ParseException extends RuntimeException {
-
-  private static final long serialVersionUID = 42L;
-
-  /**
-   * Create a new pares exception.
-   *
-   * @param message the detail message
-   * @since 4.1.0
-   */
-  public ParseException(final @NonNull String message) {
-    super(message);
-  }
-}
+package net.kyori.adventure.text.minimessage.parser;

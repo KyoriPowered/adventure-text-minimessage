@@ -1,7 +1,7 @@
 /*
  * This file is part of adventure-text-minimessage, licensed under the MIT License.
  *
- * Copyright (c) 2018-2020 KyoriPowered
+ * Copyright (c) 2018-2021 KyoriPowered
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,34 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.kyori.adventure.text.minimessage.transformation;
-
-import java.util.Deque;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
+package net.kyori.adventure.text.minimessage.parser.node;
 
 /**
- * A transformation that is applied directly to the parent builder.
+ * Represents the root node of a tree.
  *
- * <p>Rather than normal transformations which are stored and applied to every component,
- * instant transformations are executed the moment the tag is found, and don't have any effect
- * on further components.</p>
- *
- * @since 4.1.0
+ * @since 4.2.0
  */
-public abstract class InstantApplyTransformation extends Transformation {
-
+public final class RootNode extends ElementNode {
   /**
-   * Apply the child transformations to the provided builder.
+   * Creates a new root node.
    *
-   * @param parent component to act on
-   * @param transformations the stack of transformations that the parser is tracking. can be modified.
-   * @since 4.1.0
+   * @param sourceMessage the source message
+   * @since 4.2.0
    */
-  public abstract void applyInstant(final TextComponent.Builder parent, final Deque<Transformation> transformations);
-
-  @Override
-  public Component apply(final Component component, final TextComponent.Builder parent) {
-    return null;
+  public RootNode(final String sourceMessage) {
+    super(null, null, sourceMessage);
   }
 }

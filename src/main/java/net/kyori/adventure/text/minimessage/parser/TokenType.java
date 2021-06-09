@@ -1,7 +1,7 @@
 /*
  * This file is part of adventure-text-minimessage, licensed under the MIT License.
  *
- * Copyright (c) 2018-2020 KyoriPowered
+ * Copyright (c) 2018-2021 KyoriPowered
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,41 +24,13 @@
 package net.kyori.adventure.text.minimessage.parser;
 
 /**
- * A type of token understood by the MiniMessage lexer.
+ * Represents the type of a token.
  *
- * @since 4.1.0
+ * @since 4.2.0
  */
 public enum TokenType {
-  OPEN_TAG_START("<"),
-  CLOSE_TAG_START("</"),
-  TAG_END(">"),
-
-  ESCAPED_OPEN_TAG_START("<"),
-  ESCAPED_CLOSE_TAG_START("</"),
-
-  PARAM_SEPARATOR(":"),
-
-  SINGLE_QUOTE_START("'"),
-  SINGLE_QUOTE_END("'"),
-  DOUBLE_QUOTE_START("\""),
-  DOUBLE_QUOTE_END("\""),
-
-  STRING(""),
-  NAME("");
-
-  private final String value;
-
-  TokenType(final String value) {
-    this.value = value;
-  }
-
-  /**
-   * Get the literal text matched by this token.
-   *
-   * @return token text
-   * @since 4.1.0
-   */
-  public String value() {
-    return this.value;
-  }
+  TEXT,
+  OPEN_TAG,
+  CLOSE_TAG,
+  TAG_VALUE;
 }

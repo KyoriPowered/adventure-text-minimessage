@@ -1,7 +1,7 @@
 /*
  * This file is part of adventure-text-minimessage, licensed under the MIT License.
  *
- * Copyright (c) 2018-2020 KyoriPowered
+ * Copyright (c) 2018-2021 KyoriPowered
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,196 +23,212 @@
  */
 package net.kyori.adventure.text.minimessage;
 
+import java.util.Collections;
+import java.util.function.Function;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
-import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.parser.ParsingException;
 import net.kyori.adventure.text.minimessage.transformation.TransformationType;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-
 import org.junit.jupiter.api.Test;
 
-import java.util.function.Function;
-
+import static net.kyori.adventure.text.Component.empty;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.event.ClickEvent.suggestCommand;
+import static net.kyori.adventure.text.event.HoverEvent.showText;
+import static net.kyori.adventure.text.format.NamedTextColor.BLUE;
+import static net.kyori.adventure.text.format.NamedTextColor.GOLD;
+import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
+import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
+import static net.kyori.adventure.text.format.NamedTextColor.RED;
+import static net.kyori.adventure.text.format.NamedTextColor.YELLOW;
 import static net.kyori.adventure.text.format.Style.style;
+import static net.kyori.adventure.text.format.TextColor.color;
+import static net.kyori.adventure.text.format.TextDecoration.BOLD;
+import static net.kyori.adventure.text.format.TextDecoration.UNDERLINED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class MiniMessageTest {
+public class MiniMessageTest extends TestBase {
 
   @Test
   void testMarkdownBuilder() {
-    final Component expected = Component.text("BOLD", style(NamedTextColor.RED, TextDecoration.BOLD));
-    final Component result = MiniMessage.builder().markdown().build().deserialize("**<red>BOLD**");
+    final Component expected = text("BOLD").color(RED).decorate(BOLD);
+    final String input = "**<red>BOLD**";
+    final MiniMessage miniMessage = MiniMessage.builder().markdown().build();
 
-    assertEquals(expected, result);
+    this.assertParsedEquals(miniMessage, expected, input);
   }
 
   @Test
   void testNormalBuilder() {
-    final Component expected = Component.text("Test", NamedTextColor.RED);
-    final Component result = MiniMessage.builder().build().deserialize("<red>Test");
+    final Component expected = text("Test").color(RED);
+    final String input = "<red>Test";
+    final MiniMessage miniMessage = MiniMessage.builder().build();
 
-    assertEquals(expected, result);
+    this.assertParsedEquals(miniMessage, expected, input);
   }
 
   @Test
   void testNormal() {
-    final Component expected = Component.text("Test", NamedTextColor.RED);
-    final Component result = MiniMessage.get().deserialize("<red>Test");
+    final Component expected = text("Test").color(RED);
+    final String input = "<red>Test";
+    final MiniMessage miniMessage = MiniMessage.get();
 
-    assertEquals(expected, result);
+    this.assertParsedEquals(miniMessage, expected, input);
   }
 
   @Test
   void testNormalPlaceholders() {
-    final Component expected = Component.text("TEST").color(NamedTextColor.RED);
-    final Component result = MiniMessage.get().parse("<red><test>", "test", "TEST");
+    final Component expected = text("TEST").color(RED);
+    final String input = "<red><test>";
+    final MiniMessage miniMessage = MiniMessage.get();
 
-    assertEquals(expected, result);
+    this.assertParsedEquals(miniMessage, expected, input, "test", "TEST");
   }
 
   @Test
   void testObjectPlaceholders() {
-    final Component expected = Component.text()
-      .append(Component.text("ONE", NamedTextColor.RED))
-      .append(Component.text("TWO", NamedTextColor.GREEN))
-      .append(Component.text("THREEFOUR", NamedTextColor.BLUE))
-      .append(Component.text("FIVE", NamedTextColor.YELLOW))
-      .build();
-    final Component result = MiniMessage.get().parse("<red>ONE<two><blue>THREE<four><five>",
-            "two", Component.text("TWO", NamedTextColor.GREEN),
-            "four", "FOUR",
-            "five", Component.text("FIVE", NamedTextColor.YELLOW));
-
-    assertEquals(expected, result);
+    final Component expected = empty().color(RED)
+      .append(text("ONE"))
+      .append(text("TWO", GREEN))
+      .append(empty().color(BLUE)
+        .append(text("THREE"))
+        .append(text("FOUR"))
+        .append(text("FIVE", YELLOW))
+      );
+    final String input = "<red>ONE<two><blue>THREE<four><five>";
+    final MiniMessage miniMessage = MiniMessage.get();
+    this.assertParsedEquals(miniMessage, expected, input,
+      "two", text("TWO", GREEN),
+      "four", "FOUR",
+      "five", text("FIVE", YELLOW));
   }
 
   @Test
   void testObjectPlaceholdersUnbalanced() {
     assertThrows(IllegalArgumentException.class, () -> MiniMessage.get().parse("<red>ONE<two><blue>THREE<four><five>",
-            "two", Component.text("TWO", NamedTextColor.GREEN),
-            "four", "FOUR",
-            "five"));
+      "two", text("TWO", GREEN),
+      "four", "FOUR",
+      "five"));
   }
 
   @Test
   void testMarkdown() {
-    final Component expected = Component.text("BOLD", style(NamedTextColor.RED, TextDecoration.BOLD));
-    final Component result = MiniMessage.markdown().deserialize("**<red>BOLD**");
+    final Component expected = text("BOLD").color(RED).decorate(BOLD);
+    final String input = "**<red>BOLD**";
+    final MiniMessage miniMessage = MiniMessage.markdown();
 
-    assertEquals(expected, result);
+    this.assertParsedEquals(miniMessage, expected, input);
   }
 
   @Test
   void testTemplateSimple() {
-    final Component expected = Component.text("TEST");
-    final Component result = MiniMessage.get().parse("<test>", Template.of("test", "TEST"));
+    final Component expected = text("TEST");
+    final String input = "<test>";
+    final MiniMessage miniMessage = MiniMessage.get();
 
-    assertEquals(expected, result);
+    this.assertParsedEquals(miniMessage, expected, input, Template.of("test", "TEST"));
   }
 
   @Test
   void testTemplateComponent() {
-    final Component expected = Component.text("TEST", NamedTextColor.RED);
-    final Component result = MiniMessage.get().parse("<test>", Template.of("test", Component.text("TEST", NamedTextColor.RED)));
+    final Component expected = text("TEST", RED);
+    final String string = "<test>";
+    final MiniMessage miniMessage = MiniMessage.get();
 
-    assertEquals(expected, result);
+    this.assertParsedEquals(miniMessage, expected, string, Template.of("test", text("TEST", RED)));
   }
 
   @Test
   void testTemplateComponentInheritedStyle() {
-    final Component expected = Component.text("TEST", style(NamedTextColor.RED, TextDecoration.UNDERLINED, TextDecoration.BOLD));
-    final Component result = MiniMessage.get().parse("<green><bold><test>", Template.of("test", Component.text("TEST", NamedTextColor.RED, TextDecoration.UNDERLINED)));
+    final Component expected = text("TEST", RED, UNDERLINED, BOLD);
+    final String input = "<green><bold><test>";
+    final MiniMessage miniMessage = MiniMessage.get();
 
-    assertEquals(expected, result);
+    this.assertParsedEquals(miniMessage, expected, input, Template.of("test", text("TEST", RED, UNDERLINED)));
   }
 
   @Test
   void testTemplateComponentMixed() {
-    final Component expected = Component.text()
-      .append(Component.text("TEST", style(NamedTextColor.RED, TextDecoration.UNDERLINED, TextDecoration.BOLD)))
-      .append(Component.text("Test2", style(NamedTextColor.GREEN, TextDecoration.BOLD)))
-      .build();
+    final Component expected = empty().color(GREEN).decorate(BOLD)
+        .append(text("TEST", style(RED, UNDERLINED)))
+        .append(text("Test2"));
+    final String input = "<green><bold><test><test2>";
+    final MiniMessage miniMessage = MiniMessage.get();
 
-    final Template t1 = Template.of("test", Component.text("TEST", style(NamedTextColor.RED, TextDecoration.UNDERLINED)));
+    final Template t1 = Template.of("test", text("TEST", style(RED, UNDERLINED)));
     final Template t2 = Template.of("test2", "Test2");
-    final Component result = MiniMessage.get().parse("<green><bold><test><test2>", t1, t2);
 
-    assertEquals(expected, result);
+    this.assertParsedEquals(miniMessage, expected, input, t1, t2);
   }
 
-  @Test // GH-103
+  // GH-103
+  @Test
   void testTemplateInHover() {
-    final Component expected = Component.text("This is a test message.").hoverEvent(HoverEvent.showText(Component.text("[Plugin]", TextColor.color(0xff0000))));
-    final Component result = MiniMessage.get().parse("<hover:show_text:'<prefix>'>This is a test message.", Template.of("prefix", MiniMessage.get().parse("<#FF0000>[Plugin]<reset>")));
+    final Component expected = text("This is a test message.")
+        .hoverEvent(showText(text("[Plugin]").color(color(0xff0000))));
 
-    System.out.println(GsonComponentSerializer.gson().serialize(result));
+    final String input = "<hover:show_text:'<prefix>'>This is a test message.";
+    final MiniMessage miniMessage = MiniMessage.get();
 
-    assertEquals(expected, result);
+    this.assertParsedEquals(miniMessage, expected, input, Template.of("prefix", MiniMessage.get().parse("<#FF0000>[Plugin]<reset>")));
   }
 
   @Test
   void testCustomRegistry() {
-    final Component expected = Component.text()
-      .append(Component.text("<bold>", NamedTextColor.GREEN))
-      .append(Component.text("TEST", NamedTextColor.GREEN))
-      .build();
-    final Component result = MiniMessage.withTransformations(TransformationType.COLOR)
-      .parse("<green><bold><test>", "test", "TEST");
+    final Component expected = empty().color(GREEN)
+        .append(text("<bold>"))
+        .append(text("TEST"));
+    final String input = "<green><bold><test>";
+    final MiniMessage miniMessage = MiniMessage.withTransformations(TransformationType.COLOR);
 
-    assertEquals(expected, result);
+    this.assertParsedEquals(miniMessage, expected, input, "test", "TEST");
   }
 
   @Test
   void testCustomRegistryBuilder() {
-    final Component expected = Component.text()
-      .append(Component.text("<bold>", NamedTextColor.GREEN))
-      .append(Component.text("TEST", NamedTextColor.GREEN))
-      .build();
-    final Component result = MiniMessage.builder()
+    final Component expected = empty().color(GREEN)
+        .append(text("<bold>"))
+        .append(text("TEST"));
+    final String input = "<green><bold><test>";
+    final MiniMessage miniMessage = MiniMessage.builder()
       .removeDefaultTransformations()
       .transformation(TransformationType.COLOR)
-      .build()
-      .parse("<green><bold><test>", "test", "TEST");
+      .build();
 
-    assertEquals(expected, result);
+    this.assertParsedEquals(miniMessage, expected, input, "test", "TEST");
   }
 
   @Test
   void testPlaceholderResolver() {
-    final Component expected = Component.text("TEST", style(NamedTextColor.RED, TextDecoration.BOLD));
+    final Component expected = text("TEST", RED).decorate(BOLD);
+
+    final String input = "<green><bold><test>";
 
     final Function<String, ComponentLike> resolver = name -> {
-      if(name.equalsIgnoreCase("test")) {
-        return Component.text("TEST").color(NamedTextColor.RED);
+      if (name.equalsIgnoreCase("test")) {
+        return text("TEST").color(RED);
       }
       return null;
     };
 
-    final Component result = MiniMessage.builder().placeholderResolver(resolver).build().parse("<green><bold><test>");
+    final MiniMessage miniMessage = MiniMessage.builder().placeholderResolver(resolver).build();
 
-    assertEquals(expected, result);
+    this.assertParsedEquals(miniMessage, expected, input);
   }
 
   @Test
   void testOrderOfPlaceholders() {
-    final Component expected = Component.text()
-      .append(Component.text("A"))
-      .append(Component.text("B"))
-      .append(Component.text("C"))
-      .build();
+    final Component expected = text("A")
+      .append(text("B"))
+      .append(text("C"));
+    final String input = "<a><b><_c>";
+    final MiniMessage miniMessage = MiniMessage.get();
 
-    final Component result = MiniMessage.get().parse(
-            "<a><b><_c>",
-            "a", Component.text("A"),
-            "b", Component.text("B"),
-            "_c", Component.text("C")
-    );
-
-    assertEquals(expected, result);
+    this.assertParsedEquals(miniMessage, expected, input,
+      "a", text("A"),
+      "b", text("B"),
+      "_c", text("C"));
   }
 
   @Test
@@ -221,46 +237,255 @@ public class MiniMessageTest {
     assertEquals(expected, assertThrows(IllegalArgumentException.class, () -> MiniMessage.get().parse("<a>", "a", 2)).getMessage());
   }
 
-  @Test // GH-98
+  // GH-98
+  @Test
   void testTemplateInsideOfPre() {
-    final Component expected = Component.text()
-            .append(Component.text("MiniDigger", NamedTextColor.RED))
-            .append(Component.text(": ", NamedTextColor.GRAY))
-            .append(Component.text("<red>", NamedTextColor.GRAY))
-            .append(Component.text("Hello world", NamedTextColor.GRAY))
-            .build();
+    final Component expected = empty().color(RED)
+      .append(text("MiniDigger"))
+      .append(empty().color(GRAY)
+        .append(text(": "))
+        .append(text("<red><message>"))
+      );
     final String input = "<red><username><gray>: <pre><red><message>";
+    final MiniMessage miniMessage = MiniMessage.get();
 
-    final Component result = MiniMessage.get().parse(input, Template.of("username", Component.text("MiniDigger")), Template.of("message", Component.text("Hello world")));
-
-    assertEquals(expected, result);
+    this.assertParsedEquals(miniMessage, expected, input, Template.of("username", text("MiniDigger")), Template.of("message", text("Hello world")));
   }
 
-  @Test // GH-97
+  // GH-97
+  @Test
   void testUnsafePre() {
-    final Component expected = Component.text()
-            .append(Component.text("MiniDigger", NamedTextColor.RED))
-            .append(Component.text(": ", NamedTextColor.GRAY))
-            .append(Component.text("<red>", NamedTextColor.GRAY))
-            .append(Component.text("</pre><red>Test", NamedTextColor.GRAY))
-            .build();
-    final Component expected2 = Component.text()
-            .append(Component.text("MiniDigger", NamedTextColor.RED))
-            .append(Component.text(": ", NamedTextColor.GRAY))
-            .append(Component.text("<red>", NamedTextColor.GRAY))
-            .append(Component.text("</pre>", NamedTextColor.GRAY))
-            .append(Component.text("<red>", NamedTextColor.GRAY))
-            .append(Component.text("Test", NamedTextColor.GRAY))
-            .build();
+    final Component expected = empty().color(RED)
+      .append(text("MiniDigger"))
+      .append(empty().color(GRAY)
+        .append(text(": "))
+        .append(text("<red><message>"))
+      );
     final String input = "<red><username><gray>: <pre><red><message>";
+    final MiniMessage miniMessage = MiniMessage.get();
 
-    final Component result1 = MiniMessage.get().parse(input, Template.of("username", Component.text("MiniDigger")), Template.of("message", Component.text("</pre><red>Test")));
-    assertEquals(expected, result1);
+    this.assertParsedEquals(miniMessage, expected, input, Template.of("username", text("MiniDigger")), Template.of("message", text("</pre><red>Test")));
+    this.assertParsedEquals(miniMessage, expected, input, Template.of("username", "MiniDigger"), Template.of("message", "</pre><red>Test"));
+    this.assertParsedEquals(miniMessage, expected, input, "username", "MiniDigger", "message", "</pre><red>Test");
+  }
 
-    final Component result2 = MiniMessage.get().parse(input, Template.of("username", "MiniDigger"), Template.of("message", "</pre><red>Test"));
-    assertEquals(expected2, result2);
+  @Test
+  void testNodesInTemplate() {
+    final Component expected = empty().color(RED)
+        .append(text("MiniDigger"))
+        .append(empty().color(GRAY)
+            .append(text(": "))
+            .append(text("</pre><red>Test").color(RED))
+        );
+    final String input = "<red><username><gray>: <red><message>";
+    final MiniMessage miniMessage = MiniMessage.get();
 
-    final Component result3 = MiniMessage.get().parse(input, "username", "MiniDigger", "message", "</pre><red>Test");
-    assertEquals(expected2, result3);
+    this.assertParsedEquals(miniMessage, expected, input, Template.of("username", text("MiniDigger")), Template.of("message", text("</pre><red>Test")));
+    this.assertParsedEquals(miniMessage, expected, input, Template.of("username", "MiniDigger"), Template.of("message", "</pre><red>Test"));
+    this.assertParsedEquals(miniMessage, expected, input, "username", "MiniDigger", "message", "</pre><red>Test");
+  }
+
+  @Test
+  void testLazyTemplate() {
+    final Component expected = text("This is a ")
+      .append(text("TEST"));
+    final String input = "This is a <test>";
+    final MiniMessage miniMessage = MiniMessage.get();
+
+    this.assertParsedEquals(miniMessage, expected, input, Template.of("test", () -> text("TEST")));
+  }
+
+  @Test
+  void testNonStrict() {
+    final String input = "<gray>Example: <click:suggest_command:/plot flag set coral-dry true><gold>/plot flag set coral-dry true</gold></click></gray>";
+    final Component expected = empty().color(GRAY)
+      .append(text("Example: "))
+      .append(text("/plot flag set coral-dry true")
+          .color(GOLD)
+          .clickEvent(suggestCommand("/plot flag set coral-dry true"))
+      );
+
+    final MiniMessage miniMessage = MiniMessage.builder()
+      .strict(false)
+      .build();
+
+    this.assertParsedEquals(miniMessage, expected, input);
+  }
+
+  @Test
+  void testNonStrictGH69() {
+    final Component expected = text("<3");
+    final MiniMessage miniMessage = MiniMessage.builder()
+      .strict(false)
+      .build();
+
+    this.assertParsedEquals(miniMessage, expected, MiniMessage.get().escapeTokens("<3"));
+  }
+
+  @Test
+  void testStrictException() {
+    final String input = "<gray>Example: <click:suggest_command:/plot flag set coral-dry true><gold>/plot flag set coral-dry true<click></gold></gray>";
+    assertThrows(ParsingException.class, () -> MiniMessage.builder().strict(true).build().parse(input));
+  }
+
+  @Test
+  void testMissingCloseOfHover() {
+    final String input = "<hover:show_text:'<blue>Hello</blue>'<red>TEST</red></hover><click:suggest_command:'/msg <user>'><user></click> <reset>: <hover:show_text:'<date>'><message></hover>";
+    assertThrows(ParsingException.class, () -> MiniMessage.builder().strict(true).build().parse(input));
+  }
+
+  @Test
+  void testNonEndingComponent() {
+    final String input = "<red is already created! Try different name! :)";
+    MiniMessage.builder().parsingErrorMessageConsumer(strings -> assertEquals(strings, Collections.singletonList("Expected end sometimes after open tag + name, but got name = Token{type=NAME, value=\"red is already created! Try different name! \"} and inners = []"))).build().parse(input);
+  }
+
+  @Test
+  void testIncompleteTag() {
+    final String input = "<red>Click <click>here</click> to win a new <bold>car!";
+    final Component expected = empty().color(RED)
+      .append(text("Click <click>here</click> to win a new "))
+      .append(text("car!").decorate(BOLD));
+
+    this.assertParsedEquals(expected, input);
+  }
+
+  @Test
+  void allClosedTagsStrict() {
+    final String input = "<red>RED<green>GREEN</green>RED<blue>BLUE</blue></red>";
+    final Component expected = empty().color(RED)
+      .append(text("RED"))
+      .append(text("GREEN").color(GREEN))
+      .append(text("RED"))
+      .append(text("BLUE").color(BLUE));
+
+    this.assertParsedEquals(MiniMessage.builder().strict(true).build(), expected, input);
+  }
+
+  @Test
+  void unclosedTagStrict() {
+    final String input = "<red>RED<green>GREEN</green>RED<blue>BLUE";
+
+    final String errorMessage = "All tags must be explicitly closed while in strict mode. End of string found with open tags: red, blue\n" +
+        "\t<red>RED<green>GREEN</green>RED<blue>BLUE\n" +
+        "\t^~~~^                          ^~~~~^";
+
+    final ParsingException thrown = assertThrows(ParsingException.class, () -> MiniMessage.builder().strict(true).build().parse(input));
+    assertEquals(thrown.getMessage(), errorMessage);
+  }
+
+  @Test
+  void implicitCloseStrict() {
+    final String input = "<red>RED<green>GREEN</red>NO COLOR<blue>BLUE</blue>";
+
+    final String errorMessage = "Unclosed tag encountered; green is not closed, because red was closed first.\n" +
+        "\t<red>RED<green>GREEN</red>NO COLOR<blue>BLUE</blue>\n" +
+        "\t^~~~^   ^~~~~~^     ^~~~~^";
+
+    final ParsingException thrown = assertThrows(ParsingException.class, () -> MiniMessage.builder().strict(true).build().parse(input));
+    assertEquals(thrown.getMessage(), errorMessage);
+  }
+
+  @Test
+  void implicitCloseNestedStrict() {
+    final String input = "<red>RED<green>GREEN<blue>BLUE<yellow>YELLOW</green>";
+
+    final String errorMessage = "Unclosed tag encountered; yellow is not closed, because green was closed first.\n" +
+        "\t<red>RED<green>GREEN<blue>BLUE<yellow>YELLOW</green>\n" +
+        "\t        ^~~~~~^               ^~~~~~~^      ^~~~~~~^";
+
+    final ParsingException thrown = assertThrows(ParsingException.class, () -> MiniMessage.builder().strict(true).build().parse(input));
+    assertEquals(thrown.getMessage(), errorMessage);
+  }
+
+  @Test
+  void resetWhileStrict() {
+    final String input = "<red>RED<green>GREEN<reset>NO COLOR<blue>BLUE</blue>";
+
+    final String errorMessage = "<reset> tags are not allowed when strict mode is enabled\n" +
+        "\t<red>RED<green>GREEN<reset>NO COLOR<blue>BLUE</blue>\n" +
+        "\t                    ^~~~~~^";
+
+    final ParsingException thrown = assertThrows(ParsingException.class, () -> MiniMessage.builder().strict(true).build().parse(input));
+    assertEquals(thrown.getMessage(), errorMessage);
+  }
+
+  @Test
+  void debugModeSimple() {
+    final String input = "<red> RED </red>";
+
+    final StringBuilder sb = new StringBuilder();
+    MiniMessage.builder().debug(sb).build().parse(input);
+
+    final String expected = "Beginning parsing message <red> RED </red>\n" +
+        "Attempting to match node 'red' at column 0\n" +
+        "Successfully matched node 'red' to transformation ColorTransformation\n" +
+        "Text parsed into element tree:\n" +
+        "Node {\n" +
+        "  TagNode('red') {\n" +
+        "    TextNode(' RED ')\n" +
+        "  }\n" +
+        "}\n";
+
+    assertEquals(expected, sb.toString());
+  }
+
+  @Test
+  void debugModeMoreComplex() {
+    final String input = "<red> RED <blue> BLUE <click> bad click </click>";
+
+    final StringBuilder sb = new StringBuilder();
+    MiniMessage.builder().debug(sb).build().parse(input);
+
+    final String expected = "Beginning parsing message <red> RED <blue> BLUE <click> bad click </click>\n" +
+        "Attempting to match node 'red' at column 0\n" +
+        "Successfully matched node 'red' to transformation ColorTransformation\n" +
+        "Attempting to match node 'blue' at column 10\n" +
+        "Successfully matched node 'blue' to transformation ColorTransformation\n" +
+        "Attempting to match node 'click' at column 22\n" +
+        "Could not match node 'click' - Don't know how to turn [] into a click event\n" +
+        "\t<red> RED <blue> BLUE <click> bad click </click>\n" +
+        "\t                      ^~~~~~^\n" +
+        "Text parsed into element tree:\n" +
+        "Node {\n" +
+        "  TagNode('red') {\n" +
+        "    TextNode(' RED ')\n" +
+        "    TagNode('blue') {\n" +
+        "      TextNode(' BLUE <click> bad click </click>')\n" +
+        "    }\n" +
+        "  }\n" +
+        "}\n";
+
+    assertEquals(expected, sb.toString());
+  }
+
+  @Test
+  void debugModeMoreComplexNoError() {
+    final String input = "<red> RED <blue> BLUE <click:open_url:https://github.com> good click </click>";
+
+    final StringBuilder sb = new StringBuilder();
+    MiniMessage.builder().debug(sb).build().parse(input);
+
+    final String expected = "Beginning parsing message <red> RED <blue> BLUE <click:open_url:https://github.com> good click </click>\n" +
+        "Attempting to match node 'red' at column 0\n" +
+        "Successfully matched node 'red' to transformation ColorTransformation\n" +
+        "Attempting to match node 'blue' at column 10\n" +
+        "Successfully matched node 'blue' to transformation ColorTransformation\n" +
+        "Attempting to match node 'click' at column 22\n" +
+        "Successfully matched node 'click' to transformation ClickTransformation\n" +
+        "Text parsed into element tree:\n" +
+        "Node {\n" +
+        "  TagNode('red') {\n" +
+        "    TextNode(' RED ')\n" +
+        "    TagNode('blue') {\n" +
+        "      TextNode(' BLUE ')\n" +
+        "      TagNode('click', 'open_url', 'https://github.com') {\n" +
+        "        TextNode(' good click ')\n" +
+        "      }\n" +
+        "    }\n" +
+        "  }\n" +
+        "}\n";
+
+    assertEquals(expected, sb.toString());
   }
 }

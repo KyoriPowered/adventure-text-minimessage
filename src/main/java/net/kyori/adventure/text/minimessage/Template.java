@@ -1,7 +1,7 @@
 /*
  * This file is part of adventure-text-minimessage, licensed under the MIT License.
  *
- * Copyright (c) 2018-2020 KyoriPowered
+ * Copyright (c) 2018-2021 KyoriPowered
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,20 @@
  */
 package net.kyori.adventure.text.minimessage;
 
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 import net.kyori.adventure.text.Component;
 import net.kyori.examination.Examinable;
 import net.kyori.examination.ExaminableProperty;
 import net.kyori.examination.string.StringExaminer;
-
-import org.checkerframework.checker.nullness.qual.NonNull;
-
-import java.util.stream.Stream;
+import org.jetbrains.annotations.NotNull;
 
 /**
- * A placeholder in a message, that can be either replaced by a string or a component.
+ * A placeholder in a message, which can replace a tag with a component.
  *
  * @since 4.0.0
  */
 public interface Template extends Examinable {
-
   /**
    * Constructs a template that gets replaced with a string.
    *
@@ -47,7 +45,7 @@ public interface Template extends Examinable {
    * @return the constructed template
    * @since 4.0.0
    */
-  static @NonNull Template of(final @NonNull String key, final @NonNull String value) {
+  static @NotNull Template of(final @NotNull String key, final @NotNull String value) {
     return new StringTemplate(key, value);
   }
 
@@ -59,9 +57,37 @@ public interface Template extends Examinable {
    * @return the constructed template
    * @since 4.0.0
    */
-  static @NonNull Template of(final @NonNull String key, final @NonNull Component value) {
+  static @NotNull Template of(final @NotNull String key, final @NotNull Component value) {
     return new ComponentTemplate(key, value);
   }
+
+  /**
+   * Constructs a template that gets replaced with a component lazily.
+   *
+   * @param key the placeholder
+   * @param value the supplier that supplies the component to replace the key with
+   * @return the constructed template
+   * @since 4.2.0
+   */
+  static @NotNull Template of(final @NotNull String key, final @NotNull Supplier<Component> value) {
+    return new LazyComponentTemplate(key, value);
+  }
+
+  /**
+   * Get the key for this template.
+   *
+   * @return the key
+   * @since 4.2.0
+   */
+  @NotNull String key();
+
+  /**
+   * Get the value for this template.
+   *
+   * @return the value
+   * @since 4.2.0
+   */
+  @NotNull Object value();
 
   /**
    * A template with a value that will be parsed as a MiniMessage string.
@@ -72,16 +98,18 @@ public interface Template extends Examinable {
     private final String key;
     private final String value;
 
-    StringTemplate(final @NonNull String key, final @NonNull String value) {
+    StringTemplate(final @NotNull String key, final @NotNull String value) {
       this.key = key;
       this.value = value;
     }
 
-    public @NonNull String key() {
+    @Override
+    public @NotNull String key() {
       return this.key;
     }
 
-    public @NonNull String value() {
+    @Override
+    public @NotNull String value() {
       return this.value;
     }
 
@@ -91,10 +119,10 @@ public interface Template extends Examinable {
     }
 
     @Override
-    public @NonNull Stream<? extends ExaminableProperty> examinableProperties() {
+    public @NotNull Stream<? extends ExaminableProperty> examinableProperties() {
       return Stream.of(
-              ExaminableProperty.of("key", this.key),
-              ExaminableProperty.of("value", this.value)
+        ExaminableProperty.of("key", this.key),
+        ExaminableProperty.of("value", this.value)
       );
     }
   }
@@ -105,19 +133,21 @@ public interface Template extends Examinable {
    * @since 4.0.0
    */
   class ComponentTemplate implements Template {
-    private final String key;
-    private final Component value;
+    private final @NotNull String key;
+    private final @NotNull Component value;
 
-    public ComponentTemplate(final @NonNull String key, final @NonNull Component value) {
+    public ComponentTemplate(final @NotNull String key, final @NotNull Component value) {
       this.key = key;
       this.value = value;
     }
 
-    public @NonNull String key() {
+    @Override
+    public @NotNull String key() {
       return this.key;
     }
 
-    public @NonNull Component value() {
+    @Override
+    public @NotNull Component value() {
       return this.value;
     }
 
@@ -127,10 +157,37 @@ public interface Template extends Examinable {
     }
 
     @Override
-    public @NonNull Stream<? extends ExaminableProperty> examinableProperties() {
+    public @NotNull Stream<? extends ExaminableProperty> examinableProperties() {
       return Stream.of(
-              ExaminableProperty.of("key", this.key),
-              ExaminableProperty.of("value", this.value)
+        ExaminableProperty.of("key", this.key),
+        ExaminableProperty.of("value", this.value)
+      );
+    }
+  }
+
+  /**
+   * A template with a lazily provided {@link Component} value that will be inserted directly.
+   *
+   * @since 4.2.0
+   */
+  class LazyComponentTemplate extends ComponentTemplate {
+    private final @NotNull Supplier<Component> value;
+
+    public LazyComponentTemplate(final @NotNull String key, final @NotNull Supplier<Component> value) {
+      super(key, Component.empty());
+      this.value = value;
+    }
+
+    @Override
+    public @NotNull Component value() {
+      return this.value.get();
+    }
+
+    @Override
+    public @NotNull Stream<? extends ExaminableProperty> examinableProperties() {
+      return Stream.of(
+        ExaminableProperty.of("key", this.key()),
+        ExaminableProperty.of("value", this.value.get())
       );
     }
   }

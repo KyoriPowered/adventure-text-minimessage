@@ -1,7 +1,7 @@
 /*
  * This file is part of adventure-text-minimessage, licensed under the MIT License.
  *
- * Copyright (c) 2018-2020 KyoriPowered
+ * Copyright (c) 2018-2021 KyoriPowered
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
  */
 package net.kyori.adventure.text.minimessage;
 
+import java.util.UUID;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
@@ -33,17 +34,13 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.junit.jupiter.api.Disabled;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
-
-import java.util.UUID;
 
 import static net.kyori.adventure.text.Component.text;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class MiniMessageSerializerTest {
+public class MiniMessageSerializerTest extends TestBase {
 
   @Test
   void testColor() {
@@ -83,8 +80,8 @@ public class MiniMessageSerializerTest {
 
     final Builder builder = Component.text()
       .append(Component.text("This is ").decoration(TextDecoration.UNDERLINED, true)
-      .append(Component.text("underlined").decoration(TextDecoration.BOLD, true)
-      .append(Component.text(", this").decoration(TextDecoration.UNDERLINED, false))))
+        .append(Component.text("underlined").decoration(TextDecoration.BOLD, true)
+          .append(Component.text(", this").decoration(TextDecoration.UNDERLINED, false))))
       .append(Component.text(" isn't"));
 
     this.test(builder, expected);
@@ -106,9 +103,9 @@ public class MiniMessageSerializerTest {
     final String expected = "<hover:show_text:\"<red>---</red><blue><bold>-\">This is a child with hover";
 
     final Builder builder = Component.text().hoverEvent(HoverEvent.showText(Component.text()
-        .content("---").color(NamedTextColor.RED)
-        .append(Component.text("-", NamedTextColor.BLUE, TextDecoration.BOLD))
-        .build()))
+      .content("---").color(NamedTextColor.RED)
+      .append(Component.text("-", NamedTextColor.BLUE, TextDecoration.BOLD))
+      .build()))
       .append(Component.text("This is a child with hover"));
 
     this.test(builder, expected);
@@ -119,10 +116,10 @@ public class MiniMessageSerializerTest {
     final String expected = "<hover:show_text:\"<red>---</red><blue><bold>-\">Some hover</hover> that ends here";
 
     final Builder builder = Component.text()
-            .append(Component.text("Some hover").hoverEvent(
-                    HoverEvent.showText(Component.text("---").color(NamedTextColor.RED)
-                            .append(Component.text("-", NamedTextColor.BLUE, TextDecoration.BOLD)))))
-            .append(Component.text(" that ends here"));
+      .append(Component.text("Some hover").hoverEvent(
+        HoverEvent.showText(Component.text("---").color(NamedTextColor.RED)
+          .append(Component.text("-", NamedTextColor.BLUE, TextDecoration.BOLD)))))
+      .append(Component.text(" that ends here"));
 
     this.test(builder, expected);
   }
@@ -144,7 +141,7 @@ public class MiniMessageSerializerTest {
 
     final Builder builder = Component.text()
       .append(Component.text("Some click").clickEvent(ClickEvent.runCommand("test"))
-      .append(Component.text(" that doesn't end here", NamedTextColor.RED)));
+        .append(Component.text(" that doesn't end here", NamedTextColor.RED)));
 
     this.test(builder, expected);
   }
@@ -168,7 +165,7 @@ public class MiniMessageSerializerTest {
     final Builder builder = Component.text()
       .content("Press ")
       .append(Component.keybind("key.jump", NamedTextColor.RED)
-      .append(Component.text(" to jump!")));
+        .append(Component.text(" to jump!")));
 
     this.test(builder, expected);
   }
@@ -190,9 +187,9 @@ public class MiniMessageSerializerTest {
     final String expected = "<lang:some_key:\"<red>:arg\\\" 1\":\"<blue>arg 2\">";
 
     final Component translatable = Component.translatable()
-            .key("some_key")
-            .args(text(":arg\" 1", NamedTextColor.RED), text("arg 2", NamedTextColor.BLUE))
-            .build();
+      .key("some_key")
+      .args(text(":arg\" 1", NamedTextColor.RED), text("arg 2", NamedTextColor.BLUE))
+      .build();
 
     this.test(translatable, expected);
   }
@@ -202,9 +199,9 @@ public class MiniMessageSerializerTest {
     final String expected = "Click <insert:test>this</insert> to insert!";
 
     final Builder builder = Component.text()
-            .append(Component.text("Click "))
-            .append(Component.text("this").insertion("test"))
-            .append(Component.text(" to insert!"));
+      .append(Component.text("Click "))
+      .append(Component.text("this").insertion("test"))
+      .append(Component.text(" to insert!"));
 
     this.test(builder, expected);
   }
@@ -214,8 +211,8 @@ public class MiniMessageSerializerTest {
     final String expected = "<color:#ff0000>This is a </color:#ff0000>test";
 
     final Builder builder = Component.text()
-            .append(Component.text("This is a ").color(TextColor.fromHexString("#ff0000")))
-            .append(Component.text("test"));
+      .append(Component.text("This is a ").color(TextColor.fromHexString("#ff0000")))
+      .append(Component.text("test"));
 
     this.test(builder, expected);
   }
@@ -225,33 +222,29 @@ public class MiniMessageSerializerTest {
     final String expected = "<font:minecraft:default>This is a </font>test";
 
     final Builder builder = Component.text()
-            .append(Component.text().content("This is a ").font(Key.key("minecraft", "default")))
-            .append(Component.text("test"));
+      .append(Component.text().content("This is a ").font(Key.key("minecraft", "default")))
+      .append(Component.text("test"));
 
     this.test(builder, expected);
   }
 
-  @Disabled // TODO make this test actually work
   @Test
   void testRainbow() {
     final String expected = "<rainbow>test</rainbow> >> reeeeeeeee";
 
     final Component parsed = MiniMessage.get().parse(expected);
-    System.out.println(parsed);
 
     final String serialized = MiniMessage.get().serialize(parsed);
-    System.out.println(serialized);
     final Component reparsed = MiniMessage.get().parse(serialized);
-    System.out.println(reparsed);
 
-    assertEquals(parsed, reparsed);
+    assertEquals(this.gson().toJson(parsed), this.gson().toJson(reparsed));
   }
 
   @Test
   void testShowItemHover() {
     final TextComponent.Builder input = text()
-            .content("test")
-            .hoverEvent(HoverEvent.showItem(Key.key("minecraft", "stone"), 5));
+      .content("test")
+      .hoverEvent(HoverEvent.showItem(Key.key("minecraft", "stone"), 5));
     final String expected = "<hover:show_item:'minecraft:stone':5>test";
     this.test(input, expected);
   }
@@ -262,13 +255,13 @@ public class MiniMessageSerializerTest {
     final String nameString = "<gold>Custom Name!";
     final Component name = MiniMessage.get().parse(nameString);
     final TextComponent.Builder input = text()
-            .content("test")
-            .hoverEvent(HoverEvent.showEntity(Key.key("minecraft", "zombie"), uuid, name));
-    final String expected = String.format("<hover:show_entity:'minecraft:zombie':%s:\"%s\">test", uuid.toString(), nameString);
+      .content("test")
+      .hoverEvent(HoverEvent.showEntity(Key.key("minecraft", "zombie"), uuid, name));
+    final String expected = String.format("<hover:show_entity:'minecraft:zombie':%s:\"%s\">test", uuid, nameString);
     this.test(input, expected);
   }
 
-  private void test(final @NonNull ComponentLike builder, final @NonNull String expected) {
+  private void test(final @NotNull ComponentLike builder, final @NotNull String expected) {
     final String string = MiniMessageSerializer.serialize(builder.asComponent());
     assertEquals(expected, string);
   }
