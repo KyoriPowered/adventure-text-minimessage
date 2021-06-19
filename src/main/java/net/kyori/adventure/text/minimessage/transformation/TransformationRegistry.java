@@ -23,7 +23,6 @@
  */
 package net.kyori.adventure.text.minimessage.transformation;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -41,8 +40,6 @@ import org.jetbrains.annotations.Nullable;
  * @since 4.1.0
  */
 public interface TransformationRegistry {
-  TransformationRegistry EMPTY = new TransformationRegistryImpl(Collections.emptyList());
-  TransformationRegistry STANDARD = TransformationRegistry.builder().build();
 
   /**
    * Get a transformation from this registry based on the current state.
@@ -55,7 +52,7 @@ public interface TransformationRegistry {
    * @return a possible transformation
    * @since 4.1.0
    */
-  @Nullable Transformation get(String name, List<TagPart> inners, Map<String, Template> templates, Function<String, ComponentLike> placeholderResolver, Context context);
+  @Nullable Transformation get(final String name, final List<TagPart> inners, final Map<String, Template> templates, final Function<String, ComponentLike> placeholderResolver, final Context context);
 
   /**
    * Test if any registered transformation type matches the provided key.
@@ -65,7 +62,7 @@ public interface TransformationRegistry {
    * @return whether any transformation exists
    * @since 4.1.0
    */
-  boolean exists(String name, Function<String, ComponentLike> placeholderResolver);
+  boolean exists(final String name, final Function<String, ComponentLike> placeholderResolver);
 
   /**
    * Creates a new {@link TransformationRegistry.Builder}.
@@ -84,7 +81,7 @@ public interface TransformationRegistry {
    * @since 4.2.0
    */
   static @NotNull TransformationRegistry empty() {
-    return EMPTY;
+    return TransformationRegistryImpl.EMPTY;
   }
 
   /**
@@ -94,7 +91,7 @@ public interface TransformationRegistry {
    * @since 4.2.0
    */
   static @NotNull TransformationRegistry standard() {
-    return STANDARD;
+    return TransformationRegistryImpl.STANDARD;
   }
 
   /**

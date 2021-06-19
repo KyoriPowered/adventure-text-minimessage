@@ -197,7 +197,7 @@ public class MiniMessageImpl implements MiniMessage {
     }
 
     @Override
-    public @NotNull Builder transformationRegistry(final TransformationRegistry transformationRegistry) {
+    public @NotNull Builder transformations(final TransformationRegistry transformationRegistry) {
       this.registry = transformationRegistry;
       return this;
     }

@@ -41,6 +41,9 @@ final class TransformationRegistryImpl implements TransformationRegistry {
 
   private static final List<TransformationType<? extends Transformation>> DEFAULT_TRANSFORMATIONS = new ArrayList<>();
 
+  static final TransformationRegistry EMPTY;
+  static final TransformationRegistry STANDARD;
+
   static {
     DEFAULT_TRANSFORMATIONS.add(TransformationType.COLOR);
     DEFAULT_TRANSFORMATIONS.add(TransformationType.DECORATION);
@@ -52,6 +55,9 @@ final class TransformationRegistryImpl implements TransformationRegistry {
     DEFAULT_TRANSFORMATIONS.add(TransformationType.FONT);
     DEFAULT_TRANSFORMATIONS.add(TransformationType.GRADIENT);
     DEFAULT_TRANSFORMATIONS.add(TransformationType.RAINBOW);
+
+    EMPTY = new TransformationRegistryImpl(Collections.emptyList());
+    STANDARD = TransformationRegistry.builder().build();
   }
 
   private final List<TransformationType<? extends Transformation>> types;

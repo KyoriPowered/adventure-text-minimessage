@@ -196,7 +196,7 @@ public interface MiniMessage extends ComponentSerializer<Component, Component, S
      * @return this builder
      * @since 4.1.0
      */
-    @NotNull Builder transformationRegistry(final TransformationRegistry transformationRegistry);
+    @NotNull Builder transformations(final TransformationRegistry transformationRegistry);
 
     /**
      * Sets the markdown flavor that should be used to parse markdown.

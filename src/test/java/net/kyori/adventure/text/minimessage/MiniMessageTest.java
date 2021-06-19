@@ -179,7 +179,7 @@ public class MiniMessageTest extends TestBase {
   void testCustomRegistry() {
     final Component expected = text("<green><bold>").append(text("TEST"));
     final String input = "<green><bold><test>";
-    final MiniMessage miniMessage = MiniMessage.builder().transformationRegistry(TransformationRegistry.empty()).build();
+    final MiniMessage miniMessage = MiniMessage.builder().transformations(TransformationRegistry.empty()).build();
 
     this.assertParsedEquals(miniMessage, expected, input, "test", "TEST");
   }
@@ -194,7 +194,7 @@ public class MiniMessageTest extends TestBase {
             .clear()
             .add(TransformationType.COLOR)
             .build();
-    final MiniMessage miniMessage = MiniMessage.builder().transformationRegistry(registry).build();
+    final MiniMessage miniMessage = MiniMessage.builder().transformations(registry).build();
 
     this.assertParsedEquals(miniMessage, expected, input, "test", "TEST");
   }
