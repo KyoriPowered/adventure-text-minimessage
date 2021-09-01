@@ -227,7 +227,7 @@ final class MiniMessageParser {
     final BiPredicate<String, Boolean> tagNameChecker = (name, includeTemplates) ->
       registry.exists(name, placeholderResolver) || (includeTemplates && templates.containsKey(name));
 
-    final ElementNode root = TokenParser.parse(transformationFactory, tagNameChecker, templates, richMessage, context.strict());
+    final ElementNode root = TokenParser.parse(transformationFactory, tagNameChecker, templates, richMessage, context.strict(), true);
 
     if (debug != null) {
       try {
