@@ -281,8 +281,6 @@ public class MiniMessageTest extends TestBase {
     final MiniMessage miniMessage = MiniMessage.get();
 
     this.assertParsedEquals(miniMessage, expected, input, Template.of("username", text("MiniDigger")), Template.of("message", text("</pre><red>Test")));
-    this.assertParsedEquals(miniMessage, expected, input, Template.of("username", "MiniDigger"), Template.of("message", "</pre><red>Test"));
-    this.assertParsedEquals(miniMessage, expected, input, "username", "MiniDigger", "message", "</pre><red>Test");
   }
 
   @Test
