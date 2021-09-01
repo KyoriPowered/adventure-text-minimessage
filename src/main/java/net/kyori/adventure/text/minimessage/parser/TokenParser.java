@@ -35,7 +35,6 @@ import net.kyori.adventure.text.minimessage.parser.node.ElementNode;
 import net.kyori.adventure.text.minimessage.parser.node.RootNode;
 import net.kyori.adventure.text.minimessage.parser.node.TagNode;
 import net.kyori.adventure.text.minimessage.parser.node.TagPart;
-import net.kyori.adventure.text.minimessage.parser.node.TemplateNode;
 import net.kyori.adventure.text.minimessage.parser.node.TextNode;
 import net.kyori.adventure.text.minimessage.transformation.Inserting;
 import net.kyori.adventure.text.minimessage.transformation.Transformation;
@@ -311,8 +310,10 @@ public final class TokenParser {
           } else {
             final Template template = templates.get(tagNode.name());
             if (template instanceof Template.StringTemplate) {
-              // String templates are inserted into the tree as raw text nodes, not parsed
-              node.addChild(new TemplateNode(node, token, message, ((Template.StringTemplate) template).value()));
+              // String templates are inserted into the tree as raw text nodes, parsed
+              final String value = ((Template.StringTemplate) template).value();
+              final ElementNode parsedValue = TokenParser.parse(transformationFactory, tagNameChecker, templates, value, strict);
+              node.addChild(parsedValue);
             } else if (tagNameChecker.test(tagNode.name(), true)) {
               final Transformation transformation = transformationFactory.apply(tagNode);
               if (transformation == null) {

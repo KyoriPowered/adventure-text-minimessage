@@ -1257,4 +1257,9 @@ public class MiniMessageParserTest extends TestBase {
 
     this.assertParsedEquals(expected, input);
   }
+
+  @Test
+  void testPlaceholderInsidePlaceholder() {
+    this.assertParsedEquals(text("meow"), "<sound>", "sound", "<cat>", "cat", "meow");
+  }
 }
