@@ -23,10 +23,7 @@
  */
 package net.kyori.adventure.text.minimessage.transformation.inbuild;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.PrimitiveIterator;
+import java.util.*;
 import java.util.stream.Stream;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -57,6 +54,7 @@ public final class RainbowTransformation extends Transformation implements Modif
   private float center = 128;
   private float width = 127;
   private double frequency = 1;
+  private boolean backwards = false;
 
   private int phase;
 
@@ -79,8 +77,13 @@ public final class RainbowTransformation extends Transformation implements Modif
     super.load(name, args);
 
     if (args.size() == 1) {
+      String value = args.get(0).value();
+      if (args.get(0).value().startsWith("^")) {
+        this.backwards = true;
+        value = value.replace("^", "");
+      }
       try {
-        this.phase = Integer.parseInt(args.get(0).value());
+        this.phase = Integer.parseInt(value);
       } catch (final NumberFormatException ex) {
         throw new ParsingException("Expected phase, got " + args.get(0), this.argTokenArray());
       }
@@ -131,8 +134,13 @@ public final class RainbowTransformation extends Transformation implements Modif
 
       final TextComponent.Builder parent = Component.text();
 
+      if (this.colorIndex == 0 && this.backwards) {
+        this.colorIndex = this.size - 1;
+      }
+
       // apply
       final int[] holder = new int[1];
+      ArrayList<Component> components = new ArrayList<>();
       for (final PrimitiveIterator.OfInt it = content.codePoints().iterator(); it.hasNext();) {
         holder[0] = it.nextInt();
         final Component comp = Component.text(new String(holder, 0, 1), this.color(this.phase));
@@ -146,7 +154,7 @@ public final class RainbowTransformation extends Transformation implements Modif
   }
 
   private TextColor color(final float phase) {
-    final int index = this.colorIndex++;
+    final int index = this.backwards ? this.colorIndex-- : this.colorIndex++;
     final int red = (int) (Math.sin(this.frequency * index + 2 + phase) * this.width + this.center);
     final int green = (int) (Math.sin(this.frequency * index + 0 + phase) * this.width + this.center);
     final int blue = (int) (Math.sin(this.frequency * index + 4 + phase) * this.width + this.center);
