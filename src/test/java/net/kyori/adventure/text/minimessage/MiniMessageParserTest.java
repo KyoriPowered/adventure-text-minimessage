@@ -599,7 +599,7 @@ public class MiniMessageParserTest extends TestBase {
 
   @Test
   void testRainbowBackwards() {
-    final String input = "<yellow>Woo: <rainbow:^0>||||||||||||||||||||||||</rainbow>!";
+    final String input = "<yellow>Woo: <rainbow:^>||||||||||||||||||||||||</rainbow>!";
     final Component expected = empty().color(YELLOW)
             .append(text("Woo: "))
             .append(empty()
@@ -744,7 +744,7 @@ public class MiniMessageParserTest extends TestBase {
 
   @Test
   void testRainbowBackwardsWithInsertion() {
-    final String input = "<yellow>Woo: <insert:test><rainbow:^0>||||||||||||||||||||||||</rainbow>!";
+    final String input = "<yellow>Woo: <insert:test><rainbow:^>||||||||||||||||||||||||</rainbow>!";
     final Component expected = empty().color(YELLOW)
             .append(text("Woo: "))
             .append(empty().insertion("test")
