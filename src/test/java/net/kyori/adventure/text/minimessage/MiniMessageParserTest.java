@@ -599,7 +599,7 @@ public class MiniMessageParserTest extends TestBase {
 
   @Test
   void testRainbowBackwards() {
-    final String input = "<yellow>Woo: <rainbow:^>||||||||||||||||||||||||</rainbow>!";
+    final String input = "<yellow>Woo: <rainbow:!>||||||||||||||||||||||||</rainbow>!";
     final Component expected = empty().color(YELLOW)
             .append(text("Woo: "))
             .append(empty()
@@ -671,7 +671,7 @@ public class MiniMessageParserTest extends TestBase {
 
   @Test
   void testRainbowPhaseBackwards() {
-    final String input = "<yellow>Woo: <rainbow:^2>||||||||||||||||||||||||</rainbow>!";
+    final String input = "<yellow>Woo: <rainbow:!2>||||||||||||||||||||||||</rainbow>!";
     final Component expected = empty().color(YELLOW)
             .append(text("Woo: "))
             .append(empty()
@@ -744,7 +744,7 @@ public class MiniMessageParserTest extends TestBase {
 
   @Test
   void testRainbowBackwardsWithInsertion() {
-    final String input = "<yellow>Woo: <insert:test><rainbow:^>||||||||||||||||||||||||</rainbow>!";
+    final String input = "<yellow>Woo: <insert:test><rainbow:!>||||||||||||||||||||||||</rainbow>!";
     final Component expected = empty().color(YELLOW)
             .append(text("Woo: "))
             .append(empty().insertion("test")
@@ -1210,7 +1210,7 @@ public class MiniMessageParserTest extends TestBase {
 
   @Test
   void testRainbowBackwardsWithInnerClick() {
-    final String input = "Rainbow: <rainbow:^0><click:open_url:'https://github.com'>GH</click></rainbow>";
+    final String input = "Rainbow: <rainbow:!0><click:open_url:'https://github.com'>GH</click></rainbow>";
     final Component expected = text("Rainbow: ")
             .append(empty().clickEvent(openUrl("https://github.com"))
                     .append(text("G").color(color(0x0c80e0)))

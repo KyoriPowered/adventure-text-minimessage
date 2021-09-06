@@ -58,6 +58,7 @@ public final class RainbowTransformation extends Transformation implements Modif
   private float width = 127;
   private double frequency = 1;
   private boolean reversed = false;
+  private static final String REVERSE = "!";
 
   private int phase;
 
@@ -81,9 +82,9 @@ public final class RainbowTransformation extends Transformation implements Modif
 
     if (args.size() == 1) {
       String value = args.get(0).value();
-      if (args.get(0).value().startsWith("^")) {
+      if (args.get(0).value().startsWith(REVERSE)) {
         this.reversed = true;
-        value = value.replace("^", "");
+        value = value.replaceFirst(REVERSE, "");
       }
       if (value.length() > 0) {
         try {
