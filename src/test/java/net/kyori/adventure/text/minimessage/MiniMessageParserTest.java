@@ -1539,4 +1539,16 @@ public class MiniMessageParserTest extends TestBase {
     this.assertParsedEquals(expected1, input1);
     this.assertParsedEquals(expected2, input2);
   }
+
+  // https://github.com/KyoriPowered/adventure-text-minimessage/issues/166
+  @Test
+  void testEmptyTagPart() {
+    final String input = "<hover:show_text:\"\">text</hover>";
+    final String input2 = "<hover:show_text:>text</hover>";
+
+    final Component expected = text("text").hoverEvent(showText(empty()));
+
+    this.assertParsedEquals(expected, input);
+    this.assertParsedEquals(expected, input2);
+  }
 }

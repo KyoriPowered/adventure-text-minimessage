@@ -84,6 +84,7 @@ public final class TagPart {
   }
 
   private static boolean isTag(final @NotNull String text) {
+    if (text.length() < 3) return false;
     return text.charAt(0) == '<' || text.charAt(text.length() - 1) == '>';
   }
 
