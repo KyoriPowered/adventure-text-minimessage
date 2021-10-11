@@ -89,11 +89,9 @@ final class MiniMessageParser {
       String token = matcher.group(TOKEN);
       final String inner = matcher.group(INNER);
       final String end = matcher.group(END);
-      String type = token.replace("/", "");
-      if (type.contains(":")) {
-        type = type.substring(0, type.indexOf(":"));
-      }
-      if (!this.registry.exists(type, this.placeholderResolver)) {
+
+      // don't escape tokens not in the transformation registry
+      if (!this.registry.exists(this.tokenType(token), this.placeholderResolver)) {
         sb.append(start).append(token).append(end);
         continue;
       }
@@ -126,12 +124,9 @@ final class MiniMessageParser {
       }
       lastEnd = endIndex;
 
+      // don't strip tokens not in the transformation registry
       final String token = matcher.group(TOKEN);
-      String type = token.replace("/", "");
-      if (type.contains(":")) {
-        type = type.substring(0, type.indexOf(":"));
-      }
-      if (!this.registry.exists(type, this.placeholderResolver)) {
+      if (!this.registry.exists(this.tokenType(token), this.placeholderResolver)) {
         sb.append(matcher.group(START)).append(token).append(matcher.group(END));
       }
     }
@@ -141,6 +136,18 @@ final class MiniMessageParser {
     }
 
     return sb.toString();
+  }
+
+  private String tokenType(final String token) {
+    String type = token;
+    if (type.startsWith("/")) {
+      type = type.substring(1);
+    }
+    final int slashIdx = type.indexOf(":");
+    if (slashIdx != -1) {
+      type = type.substring(0, slashIdx);
+    }
+    return type;
   }
 
   @NotNull Component parseFormat(final @NotNull String richMessage, final @NotNull Context context, final @NotNull String... placeholders) {
