@@ -89,6 +89,14 @@ final class MiniMessageParser {
       String token = matcher.group(TOKEN);
       final String inner = matcher.group(INNER);
       final String end = matcher.group(END);
+      String type = token.replace("/", "");
+      if (type.contains(":")) {
+        type = type.substring(0, type.indexOf(":"));
+      }
+      if (!this.registry.exists(type, this.placeholderResolver)) {
+        sb.append(start).append(token).append(end);
+        continue;
+      }
 
       // also escape inner
       if (inner != null) {
@@ -117,6 +125,15 @@ final class MiniMessageParser {
         sb.append(richMessage, lastEnd, startIndex);
       }
       lastEnd = endIndex;
+
+      final String token = matcher.group(TOKEN);
+      String type = token.replace("/", "");
+      if (type.contains(":")) {
+        type = type.substring(0, type.indexOf(":"));
+      }
+      if (!this.registry.exists(type, this.placeholderResolver)) {
+        sb.append(matcher.group(START)).append(token).append(matcher.group(END));
+      }
     }
 
     if (richMessage.length() > lastEnd) {
